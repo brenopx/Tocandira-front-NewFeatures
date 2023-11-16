@@ -45,7 +45,7 @@ class DataSourcePopup extends React.PureComponent {
     processRowUpdate=(newRow) =>{
         let new_ds_content = []
         let edit_ds_content = this.state.edit_ds_content
-        let list_ds = this.props.datasource.ds_content.filter(this.filterData)
+        let list_ds = this.state.ds_content
         list_ds.forEach((row) => {
             if(row.name === newRow.name){
                 newRow['protocol'] = row['protocol']

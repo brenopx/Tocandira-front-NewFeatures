@@ -45,7 +45,7 @@ class DataSourcePopup extends React.PureComponent {
     processRowUpdate=(newRow) =>{
         let new_dp_content = []
         let edit_dp_content = this.state.edit_dp_content
-        let list_dp = this.props.datapoint.dp_content.filter(this.filterData)
+        let list_dp = this.state.dp_content
         list_dp.forEach((row) => {
             if(row.name === newRow.name){
                 newRow['access'] = row['access']
