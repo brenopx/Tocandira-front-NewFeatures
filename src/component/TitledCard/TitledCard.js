@@ -11,8 +11,7 @@
 // Imports from modules;
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Card, CardContent, Grid, Typography } from '@mui/material';
-
+import { Card, CardContent, Grid, IconButton, Stack, Typography } from '@mui/material';
 // #######################################
 
 /** Description
@@ -24,7 +23,8 @@ class TitledCard extends React.PureComponent {
     static propTypes = {
         title: PropTypes.string,
         contents: PropTypes.arrayOf(PropTypes.object),
-        cardprops: PropTypes.object
+        cardprops: PropTypes.object,
+        title_icon: PropTypes.object,
     };
     
     /** Recieves a content and add it to the card grid
@@ -38,14 +38,24 @@ class TitledCard extends React.PureComponent {
     /** Defines the component visualization.
     * @returns JSX syntax element */
     render(){
+        let icon = null
+        if(this.props.title_icon){        
+            icon = (<IconButton variant="contained" size="large" onClick={this.props.handleClickIcon}>
+                    {this.props.title_icon}
+                </IconButton>)
+        }
+
         const jsx_component = (
             <Card sx={{...this.props.cardprops, borderRadius:'1rem'}}>
                 <CardContent sx={{padding:'1rem 2rem'}}>
                 <Grid container spacing='1rem' direction="column" alignItems="stretch">
                     <Grid item>
-                        <Typography variant='h5' align='left' color='text.secondary'>
-                            {this.props.title}
-                        </Typography>
+                        <Stack direction='row' alignItems='center'>
+                            <Typography variant='h5' align='left' color='text.secondary'>
+                                {this.props.title}
+                            </Typography>
+                            {icon}
+                        </Stack>
                     </Grid>
                     {this.props.contents.map(this.buildContent)}
                 </Grid>
