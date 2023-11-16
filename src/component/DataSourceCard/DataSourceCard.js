@@ -20,6 +20,8 @@ import DataSourcePopup from '../../component/Popups/DataSourcePopup'
 import DeletePopup from '../../component/Popups/DeletePopup';
 import * as popupsActions from '../../store/popups/actions'
 import * as datasourceActions from '../../store/datasource/actions'
+import EditSourceFullScreen from '../Popups/EditSourceFullScreen';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 // #######################################
 
@@ -114,6 +116,10 @@ class DataSourceCard extends React.PureComponent {
         return(row.active && row.collector_id===this.props.collector.selected.id)
     }
 
+    handleClickIcon=() => {
+        this.props.onHandleStateEditDs(true)
+    }
+
     /** Defines the component visualization.
     * @returns JSX syntax element */
     render(){
@@ -152,12 +158,21 @@ class DataSourceCard extends React.PureComponent {
                 onDeleteClick={this.handleDeleteClick}/>
             ]; 
 
+        const dialog_full = (
+            <EditSourceFullScreen
+                OpenDialog={this.props.datasource.state_edit_ds}
+            />
+        )
+
         const jsx_component = (
             <div>
                 <TitledCard cardprops={{flex:'1 1 auto'}}
-                    title='Data Sources' contents={card_contents}/>
+                    title='Data Sources' contents={card_contents} 
+                    title_icon={<OpenInNewIcon />}
+                    handleClickIcon={this.handleClickIcon}/>
                 {popup}
                 {delete_popup}
+                {dialog_full}
             </div>
         );
         return(jsx_component);
@@ -175,6 +190,7 @@ const reduxStateToProps = (state) =>({
 
 /** Map the Redux actions dispatch to some component props */
 const reduxDispatchToProps = (dispatch) =>({
+    onHandleStateEditDs:(state)=>dispatch(datasourceActions.handleStateEditDs(state)),
     onOpenPopup:(open)=>dispatch(popupsActions.openDataSourcePopup(open)),
     onGetDataSource:(api)=>dispatch(datasourceActions.getData(api)),
     onDeleteDataSource:(api,ds_name)=>dispatch(datasourceActions.deleteData(api,ds_name)),
