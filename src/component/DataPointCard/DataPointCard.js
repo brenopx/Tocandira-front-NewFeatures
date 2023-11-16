@@ -21,6 +21,8 @@ import * as popupsActions from '../../store/popups/actions';
 import * as datapointActions from '../../store/datapoint/actions';
 import DataPointPopup from '../Popups/DataPointPopup';
 import DeletePopup from '../../component/Popups/DeletePopup';
+import EditPointFullScreen from '../Popups/EditPointFullScreen';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 // #######################################
 
@@ -122,6 +124,10 @@ class DataPointCard extends React.PureComponent {
         }
     }
 
+    handleClickIcon=() => {
+        this.props.onHandleStateEditDp(true)
+    }
+
     /** Defines the component visualization.
     * @returns JSX syntax element */
     render(){
@@ -162,12 +168,21 @@ class DataPointCard extends React.PureComponent {
                 onDeleteClick={this.handleDeleteClick}/>,
             ];
 
+        const dialog_full = (
+            <EditPointFullScreen
+                OpenDialog={this.props.datapoint.state_edit_dp}
+            />
+        )
+
         const jsx_component = (
             <div>
                 <TitledCard cardprops={{flex:'1 1 auto'}}
-                    title='Data Points' contents={card_contents}/>
+                    title='Data Points' contents={card_contents}
+                    title_icon={<OpenInNewIcon />} 
+                    handleClickIcon={this.handleClickIcon}/>
                 {popup}
                 {delete_popup}
+                {dialog_full}
             </div>
         );
         return(jsx_component);
@@ -186,6 +201,7 @@ const reduxStateToProps = (state) =>({
 
 /** Map the Redux actions dispatch to some component props */
 const reduxDispatchToProps = (dispatch) =>({
+    onHandleStateEditDp:(state)=>dispatch(datapointActions.handleStateEditDp(state)),
     onOpenPopup:(open)=>dispatch(popupsActions.openDataPointPopup(open)),
     onGetDataPoint:(api)=>dispatch(datapointActions.getData(api)),
     onDeleteDataPoint:(api,dp_name)=>dispatch(datapointActions.deleteData(api,dp_name)),
