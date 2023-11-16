@@ -15,6 +15,7 @@ const initialState = {
     dp_content:[],
     dp_defaults:{},
     dp_verify:[],
+    state_edit_dp:false,
 };
 
 /** Auth reducer definition */
@@ -51,6 +52,10 @@ const reducer = (state=initialState, action) => {
         case actionTypes.GET_DP_DEFAULTS:
             newState.dp_defaults = {...state.dp_defaults};
             newState.dp_defaults[action.protocol] = action.defaults;
+            break
+        case actionTypes.STATE_EDIT_DP:
+            console.log('chegou em STATE_EDIT_DP', action.state_edit_dp)
+            newState.state_edit_dp = action.state_edit_dp;
             break
         default:
             // console.debug('[reducers/auth]',action)

@@ -219,3 +219,5 @@ export const exportData=(api_instance,id) => (dispatch) => {
         }
     )    
 };
+
+export const handleStateEditDp=(state_edit_dp) => ({type:actionTypes.STATE_EDIT_DP, state_edit_dp: state_edit_dp})
