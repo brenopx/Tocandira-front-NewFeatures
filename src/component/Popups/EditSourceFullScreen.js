@@ -72,13 +72,21 @@ class DataSourcePopup extends React.PureComponent {
         return (newRow);
     }
 
+    handleClear=() =>{
+        const newState = {...this.state};
+        newState.ds_content = [];
+        newState.edit_ds_content = [];
+        this.setState(newState);
+    }
+
     handleOkClickDialog=() => {
         this.props.onHandleStateEditDs(false)
-        console.log("valor de edit_ds_content", this.state.edit_ds_content)
+        this.handleClear()
     }
 
     handleCancelClickDialog=() => {
         this.props.onHandleStateEditDs(false)
+        this.handleClear()
     }
 
     /** Description.
