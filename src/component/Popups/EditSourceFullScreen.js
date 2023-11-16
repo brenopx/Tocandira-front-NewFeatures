@@ -46,9 +46,9 @@ class DataSourcePopup extends React.PureComponent {
         let new_ds_content = []
         let edit_ds_content = this.state.edit_ds_content
         let list_ds = this.props.datasource.ds_content.filter(this.filterData)
-        const newState = {...this.state};
         list_ds.forEach((row) => {
             if(row.name === newRow.name){
+                newRow['protocol'] = row['protocol']
                 let isnew = true
                 edit_ds_content = edit_ds_content.map((item)=>{
                     if(item.name === newRow.name){
@@ -66,6 +66,7 @@ class DataSourcePopup extends React.PureComponent {
                 return(new_ds_content.push(row))
             }
         })
+        const newState = {...this.state};
         newState.ds_content = new_ds_content;
         newState.edit_ds_content = edit_ds_content;
         this.setState(newState);
@@ -80,6 +81,9 @@ class DataSourcePopup extends React.PureComponent {
     }
 
     handleOkClickDialog=() => {
+        this.state.edit_ds_content.forEach((row)=>{
+            this.props.onEditSave(this.props.global.backend_instance, row);
+        });
         this.props.onHandleStateEditDs(false)
         this.handleClear()
     }
@@ -142,6 +146,7 @@ const reduxStateToProps = (state) =>({
 /** Map the Redux actions dispatch to some component props */
 const reduxDispatchToProps = (dispatch) =>({
     onHandleStateEditDs:(state)=>dispatch(datasourceActions.handleStateEditDs(state)),
+    onEditSave:(api,info)=>dispatch(datasourceActions.putData(api,info)),
 });
 
 // Make this component visible on import
