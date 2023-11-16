@@ -182,3 +182,5 @@ export const putDataSourceConfirm=(api_instance, dslist) => (dispatch) => {
         )
     })
 };
+
+export const handleStateEditDs=(state_edit_ds) => ({type:actionTypes.STATE_EDIT_DS, state_edit_ds: state_edit_ds})

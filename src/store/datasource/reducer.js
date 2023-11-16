@@ -14,7 +14,8 @@ const initialState = {
     ds_content:[],
     protocol_avail:[],
     protocol_default:"",
-    ds_defaults:{}
+    ds_defaults:{},
+    state_edit_ds:false,
 };
 
 /** Auth reducer definition */
@@ -33,6 +34,9 @@ const reducer = (state=initialState, action) => {
         case actionTypes.GET_DS_DEFAULTS:
             newState.ds_defaults = {...state.ds_defaults};
             newState.ds_defaults[action.protocol] = action.defaults;
+            break
+        case actionTypes.STATE_EDIT_DS:
+            newState.state_edit_ds = action.state_edit_ds;
             break
         default:
             // console.debug('[reducers/auth]',action)
