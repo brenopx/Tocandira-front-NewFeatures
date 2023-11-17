@@ -16,6 +16,12 @@ import { connect } from 'react-redux';
 import * as datasourceActions from '../../store/datasource/actions'
 import EditTable from '../../component/DataTable/EditTable'
 import DialogFullScreen from '../../component/Popups/DialogFullScreen'
+import RestoreIcon from '@mui/icons-material/Restore';
+import DeleteIcon from '@mui/icons-material/DeleteOutlined';
+import {
+    GridActionsCellItem,
+} from '@mui/x-data-grid';
+import { Box } from '@mui/material';
 //import './DataSourcePopup.css';
 
 // #######################################
@@ -37,6 +43,9 @@ class DataSourcePopup extends React.PureComponent {
     
     handleDsContent=() => {
         let list_ds = this.props.datasource.ds_content.filter(this.filterData)
+        list_ds.map((row) => {
+            row['is_excluding'] = false
+        })
         const newState = {...this.state};
         newState.ds_content = list_ds;
         this.setState(newState);
@@ -84,6 +93,14 @@ class DataSourcePopup extends React.PureComponent {
         this.state.edit_ds_content.forEach((row)=>{
             this.props.onEditSave(this.props.global.backend_instance, row);
         });
+        this.state.ds_content.forEach((row)=>{
+            if(row.is_excluding){
+                this.props.onDeleteDataSource(
+                    this.props.global.backend_instance,
+                    row.name
+                );
+            }
+        });
         this.props.onHandleStateEditDs(false)
         this.handleClear()
     }
@@ -93,11 +110,45 @@ class DataSourcePopup extends React.PureComponent {
         this.handleClear()
     }
 
+    handleProcessRowUpdateError=(error) => {
+        console.log("valor do error", error)
+    }
+
     /** Description.
     * @param ``: 
     * @returns */
     filterData=(row) => {
         return(row.active && row.collector_id===this.props.collector.selected.id)
+    }
+
+    handleRestoreClick = (params) => () => {
+        let list_ds = this.state.ds_content.map((row) => {
+            if(row.name === params.id){
+                row['is_excluding'] = false
+            }
+            return(row)
+        })
+        const newState = {...this.state};
+        newState.ds_content = list_ds;
+        this.setState(newState);
+    };
+    
+    handleDeleteClick = (params) => () => {
+        let list_ds = this.state.ds_content.map((row) => {
+            if(row.name === params.id){
+                row['is_excluding'] = true
+            }
+            return(row)
+        })
+        const newState = {...this.state};
+        newState.ds_content = list_ds;
+        this.setState(newState);
+    };
+
+    getRowClassName=(params) => {
+        if (params.row.is_excluding) {
+            return 'Delete';
+        }
     }
 
     /** Defines the component visualization.
@@ -109,7 +160,24 @@ class DataSourcePopup extends React.PureComponent {
             {field: "plc_port", headerName:"PLC Port",editable: true, flex:1},
             {field: "timeout", headerName:"Time Out",editable: true, flex:1},
             {field: "cycletime", headerName:"Cycle Time",editable: true, flex:1},
-            {field: "protocol", headerName: "Protocol", editable: true, flex:2,valueGetter: (params) => params.row.protocol.name},
+            {field: "protocol", headerName: "Protocol", editable: false, flex:1,
+                valueGetter: (params) => params.row.protocol.name
+            },
+            {field: 'actions', type: 'actions', headerName: 'Actions', cellClassName: 'actions',
+                getActions: (params) => {
+                    return[<GridActionsCellItem
+                      icon={<RestoreIcon />}
+                      label="Edit"
+                      onClick={this.handleRestoreClick(params)}
+                      color="inherit"
+                    />,
+                    <GridActionsCellItem
+                      icon={<DeleteIcon />}
+                      label="Delete"
+                      onClick={this.handleDeleteClick(params)}
+                      color="inherit"
+                    />,
+                ]},},
         ]
 
         const jsx_component = (
@@ -119,11 +187,22 @@ class DataSourcePopup extends React.PureComponent {
                     onOkClick={this.handleOkClickDialog}
                     onCancelClick={this.handleCancelClickDialog}
                 >
-                    <EditTable 
-                        headers={header}
-                        content_rows={this.state.ds_content}
-                        processRowUpdate={this.processRowUpdate}
-                    />
+                    <Box
+                        sx={{
+                            '& .Delete': {
+                                backgroundColor: '#ff6961',
+                                color: '#000',
+                            }
+                        }}
+                    >
+                        <EditTable 
+                            headers={header}
+                            content_rows={this.state.ds_content}
+                            processRowUpdate={this.processRowUpdate}
+                            handleProcessRowUpdateError={this.handleProcessRowUpdateError}
+                            getRowClassName={(params) => this.getRowClassName(params)}
+                        />
+                    </Box>
                 </DialogFullScreen>
         );
         return(jsx_component);
@@ -147,6 +226,7 @@ const reduxStateToProps = (state) =>({
 const reduxDispatchToProps = (dispatch) =>({
     onHandleStateEditDs:(state)=>dispatch(datasourceActions.handleStateEditDs(state)),
     onEditSave:(api,info)=>dispatch(datasourceActions.putData(api,info)),
+    onDeleteDataSource:(api,ds_name)=>dispatch(datasourceActions.deleteData(api,ds_name)),
 });
 
 // Make this component visible on import
