@@ -23,6 +23,7 @@ import DataPointPopup from '../Popups/DataPointPopup';
 import DeletePopup from '../../component/Popups/DeletePopup';
 import EditPointFullScreen from '../Popups/EditPointFullScreen';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { IconButton } from '@mui/material';
 
 // #######################################
 
@@ -173,12 +174,15 @@ class DataPointCard extends React.PureComponent {
             dialog_full = <EditPointFullScreen OpenDialog={this.props.datapoint.state_edit_dp} />
         }
 
+        let icon = (<IconButton variant="contained" size="medium" onClick={this.handleClickIcon}>
+            <OpenInNewIcon fontSize='small' />
+        </IconButton>)
+
         const jsx_component = (
             <div>
                 <TitledCard cardprops={{flex:'1 1 auto'}}
-                    title='Data Points' contents={card_contents}
-                    title_icon={<OpenInNewIcon />} 
-                    handleClickIcon={this.handleClickIcon}/>
+                title='Data Points' contents={card_contents}
+                itens_title={icon}/>
                 {popup}
                 {delete_popup}
                 {dialog_full}

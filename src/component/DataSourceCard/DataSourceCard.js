@@ -22,6 +22,7 @@ import * as popupsActions from '../../store/popups/actions'
 import * as datasourceActions from '../../store/datasource/actions'
 import EditSourceFullScreen from '../Popups/EditSourceFullScreen';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { IconButton } from '@mui/material';
 
 // #######################################
 
@@ -163,12 +164,15 @@ class DataSourceCard extends React.PureComponent {
             dialog_full = <EditSourceFullScreen OpenDialog={this.props.datasource.state_edit_ds} />
         }
 
+        let icon = (<IconButton variant="contained" size="medium" onClick={this.handleClickIcon}>
+            <OpenInNewIcon fontSize='small' />
+        </IconButton>)
+
         const jsx_component = (
             <div>
                 <TitledCard cardprops={{flex:'1 1 auto'}}
                     title='Data Sources' contents={card_contents} 
-                    title_icon={<OpenInNewIcon />}
-                    handleClickIcon={this.handleClickIcon}/>
+                    itens_title={icon}/>
                 {popup}
                 {delete_popup}
                 {dialog_full}
