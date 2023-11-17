@@ -43,7 +43,7 @@ class DataSourcePopup extends React.PureComponent {
     
     handleDsContent=() => {
         let list_dp = this.props.datapoint.dp_content.filter(this.filterData)
-        list_dp.map((row) => {
+        list_dp.forEach((row) => {
             row['is_excluding'] = false
         })
         const newState = {...this.state};
@@ -160,13 +160,7 @@ class DataSourcePopup extends React.PureComponent {
     * @returns JSX syntax element */ 
     render(){
         const header = [
-            {field: "name", headerName:"Name",editable: false, flex:1},
-            {field: "description", headerName:"Description",editable: true, flex:1},
-            {field: "num_type", headerName:"Num Type",editable: true, flex:1},
-            {field: "datasource_name", headerName:"Data Source",editable: true, flex:1},
-            {field: "access", headerName:"Access", editable: false, flex:1,
-                valueGetter: (params) => params.row.access.name
-            },{field: 'actions', type: 'actions', headerName: 'Actions', cellClassName: 'actions',
+            {field: 'actions', type: 'actions', cellClassName: 'actions',
             getActions: (params) => {
                 return[<GridActionsCellItem
                   icon={<RestoreIcon />}
@@ -181,6 +175,13 @@ class DataSourcePopup extends React.PureComponent {
                   color="inherit"
                 />,
             ]},},
+            {field: "name", headerName:"Name",editable: false, flex:1},
+            {field: "description", headerName:"Description",editable: true, flex:1},
+            {field: "num_type", headerName:"Num Type",editable: true, flex:1},
+            {field: "datasource_name", headerName:"Data Source",editable: true, flex:1},
+            {field: "access", headerName:"Access", editable: false, flex:1,
+                valueGetter: (params) => params.row.access.name
+            },
         ]
 
         const jsx_component = (

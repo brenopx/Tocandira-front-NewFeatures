@@ -43,7 +43,7 @@ class DataSourcePopup extends React.PureComponent {
     
     handleDsContent=() => {
         let list_ds = this.props.datasource.ds_content.filter(this.filterData)
-        list_ds.map((row) => {
+        list_ds.forEach((row) => {
             row['is_excluding'] = false
         })
         const newState = {...this.state};
@@ -155,15 +155,7 @@ class DataSourcePopup extends React.PureComponent {
     * @returns JSX syntax element */ 
     render(){
         const header = [
-            {field: "name", headerName:"Name",editable: false, flex:1},
-            {field: "plc_ip", headerName:"IP Address",editable: true, flex:1},
-            {field: "plc_port", headerName:"PLC Port",editable: true, flex:1},
-            {field: "timeout", headerName:"Time Out",editable: true, flex:1},
-            {field: "cycletime", headerName:"Cycle Time",editable: true, flex:1},
-            {field: "protocol", headerName: "Protocol", editable: false, flex:1,
-                valueGetter: (params) => params.row.protocol.name
-            },
-            {field: 'actions', type: 'actions', headerName: 'Actions', cellClassName: 'actions',
+            {field: 'actions', type: 'actions', cellClassName: 'actions',
                 getActions: (params) => {
                     return[<GridActionsCellItem
                       icon={<RestoreIcon />}
@@ -177,7 +169,15 @@ class DataSourcePopup extends React.PureComponent {
                       onClick={this.handleDeleteClick(params)}
                       color="inherit"
                     />,
-                ]},},
+            ]},},
+            {field: "name", headerName:"Name",editable: false, flex:1},
+            {field: "plc_ip", headerName:"IP Address",editable: true, flex:1},
+            {field: "plc_port", headerName:"PLC Port",editable: true, flex:1},
+            {field: "timeout", headerName:"Time Out",editable: true, flex:1},
+            {field: "cycletime", headerName:"Cycle Time",editable: true, flex:1},
+            {field: "protocol", headerName: "Protocol", editable: false, flex:1,
+                valueGetter: (params) => params.row.protocol.name
+            },
         ]
 
         const jsx_component = (
