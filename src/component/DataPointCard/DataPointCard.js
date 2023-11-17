@@ -168,11 +168,10 @@ class DataPointCard extends React.PureComponent {
                 onDeleteClick={this.handleDeleteClick}/>,
             ];
 
-        const dialog_full = (
-            <EditPointFullScreen
-                OpenDialog={this.props.datapoint.state_edit_dp}
-            />
-        )
+        let dialog_full = null
+        if(this.props.datapoint.state_edit_dp){
+            dialog_full = <EditPointFullScreen OpenDialog={this.props.datapoint.state_edit_dp} />
+        }
 
         const jsx_component = (
             <div>

@@ -157,12 +157,11 @@ class DataSourceCard extends React.PureComponent {
                 onEditClick={this.handleEditClick}
                 onDeleteClick={this.handleDeleteClick}/>
             ]; 
-
-        const dialog_full = (
-            <EditSourceFullScreen
-                OpenDialog={this.props.datasource.state_edit_ds}
-            />
-        )
+        
+        let dialog_full = null
+        if(this.props.datasource.state_edit_ds){
+            dialog_full = <EditSourceFullScreen OpenDialog={this.props.datasource.state_edit_ds} />
+        }
 
         const jsx_component = (
             <div>
