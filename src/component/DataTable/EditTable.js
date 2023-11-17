@@ -12,6 +12,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { DataGrid } from '@mui/x-data-grid';
+import { darken, lighten, styled } from '@mui/material/styles';
 // Local Imports
 
 // #######################################
@@ -26,6 +27,7 @@ class DataTable extends React.PureComponent {
         headers:PropTypes.any,
         content_rows:PropTypes.array,
         processRowUpdate:PropTypes.func,
+        handleProcessRowUpdateError:PropTypes.func,
     };
 
     static defaultProps={
@@ -41,6 +43,8 @@ class DataTable extends React.PureComponent {
                 rows={this.props.content_rows}
                 editMode="row"
                 processRowUpdate={this.props.processRowUpdate}
+                onProcessRowUpdateError={this.props.handleProcessRowUpdateError}
+                getRowClassName={this.props.getRowClassName}
             />)
         return(jsx_component);
     }
