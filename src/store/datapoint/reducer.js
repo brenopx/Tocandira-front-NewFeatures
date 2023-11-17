@@ -54,7 +54,6 @@ const reducer = (state=initialState, action) => {
             newState.dp_defaults[action.protocol] = action.defaults;
             break
         case actionTypes.STATE_EDIT_DP:
-            console.log('chegou em STATE_EDIT_DP', action.state_edit_dp)
             newState.state_edit_dp = action.state_edit_dp;
             break
         default:
