@@ -38,13 +38,12 @@ class DataSourcePopup extends React.PureComponent {
     /** Defines the component state variables */
     state = {
         dp_content:[],
-        edit_dp_content:[],
     };
     
     handleDsContent=() => {
         let list_dp = this.props.datapoint.dp_content.filter(this.filterData)
         list_dp.forEach((row) => {
-            row['is_excluding'] = false
+            row['row_state'] = 'no_alterations'
         })
         const newState = {...this.state};
         newState.dp_content = list_dp;
@@ -53,23 +52,11 @@ class DataSourcePopup extends React.PureComponent {
 
     processRowUpdate=(newRow) =>{
         let new_dp_content = []
-        let edit_dp_content = this.state.edit_dp_content
         let list_dp = this.state.dp_content
         list_dp.forEach((row) => {
             if(row.name === newRow.name){
                 newRow['access'] = row['access']
-                let isnew = true
-                edit_dp_content = edit_dp_content.map((item)=>{
-                    if(item.name === newRow.name){
-                        isnew = false
-                        return (newRow)
-                    } else{
-                        return (item)
-                    }
-                })
-                if (isnew){
-                    edit_dp_content.push(newRow)
-                }
+                newRow['row_state'] = 'Edited'
                 new_dp_content.push(newRow)
             } else {
                 new_dp_content.push(row)
@@ -77,26 +64,27 @@ class DataSourcePopup extends React.PureComponent {
         })
         const newState = {...this.state};
         newState.dp_content = new_dp_content;
-        newState.edit_dp_content = edit_dp_content;
         this.setState(newState);
+        return (newRow);
     }
 
     handleClear=() =>{
         const newState = {...this.state};
         newState.dp_content = [];
-        newState.edit_dp_content = [];
         this.setState(newState);
     }
 
     handleOkClickDialog=() => {
-        this.state.edit_dp_content.forEach((row)=>{
-            this.props.onEditSave(this.props.global.backend_instance, row);
-        });
         this.state.dp_content.forEach((row)=>{
-            if(row.is_excluding){
+            if(row.row_state === 'Delete'){
                 this.props.onDeleteDataPoint(
                     this.props.global.backend_instance,
                     row.name
+                );
+            } else if(row.row_state === 'Edited'){
+                this.props.onEditSave(
+                    this.props.global.backend_instance, 
+                    row
                 );
             }
         });
@@ -110,7 +98,7 @@ class DataSourcePopup extends React.PureComponent {
     }
 
     handleProcessRowUpdateError=(error) => {
-        console.log("valor do error", error)
+        console.log("valor do error", error);
     }
 
     /** Description.
@@ -127,11 +115,19 @@ class DataSourcePopup extends React.PureComponent {
     }
 
     handleRestoreClick = (params) => () => {
+        let new_row = []
+        let list_dp_no_alterations = this.props.datapoint.dp_content.filter(this.filterData)
+        list_dp_no_alterations.forEach((row_no_alterations) => {
+            if(row_no_alterations.name === params.id){
+                new_row = row_no_alterations
+                new_row['row_state'] = 'no_alterations'
+            }
+        })
         let list_dp = this.state.dp_content.map((row) => {
             if(row.name === params.id){
-                row['is_excluding'] = false
-            }
-            return(row)
+                row = new_row
+                return(row)
+            } else {return (row)}
         })
         const newState = {...this.state};
         newState.dp_content = list_dp;
@@ -141,7 +137,7 @@ class DataSourcePopup extends React.PureComponent {
     handleDeleteClick = (params) => () => {
         let list_dp = this.state.dp_content.map((row) => {
             if(row.name === params.id){
-                row['is_excluding'] = true
+                row['row_state'] = 'Delete'
             }
             return(row)
         })
@@ -151,9 +147,7 @@ class DataSourcePopup extends React.PureComponent {
     };
 
     getRowClassName=(params) => {
-        if (params.row.is_excluding) {
-            return 'Delete';
-        }
+        return (params.row.row_state)
     }
 
     /** Defines the component visualization.
@@ -195,6 +189,12 @@ class DataSourcePopup extends React.PureComponent {
                         sx={{
                             '& .Delete': {
                                 backgroundColor: '#ff6961',
+                                color: '#000',
+                            },'& .Edited': {
+                                backgroundColor: '#ffffd1',
+                                color: '#000',
+                            },'& .New_Row': {
+                                backgroundColor: '#81ff8a',
                                 color: '#000',
                             }
                         }}

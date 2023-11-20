@@ -14,8 +14,8 @@ import { connect } from 'react-redux';
 
 // Local Imports
 import * as datasourceActions from '../../store/datasource/actions'
-import EditTable from '../../component/DataTable/EditTable'
-import DialogFullScreen from '../../component/Popups/DialogFullScreen'
+import EditTable from '../DataTable/EditTable'
+import DialogFullScreen from './DialogFullScreen'
 import RestoreIcon from '@mui/icons-material/Restore';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import {
@@ -38,13 +38,12 @@ class DataSourcePopup extends React.PureComponent {
     /** Defines the component state variables */
     state = {
         ds_content:[],
-        edit_ds_content:[],
     };
     
     handleDsContent=() => {
         let list_ds = this.props.datasource.ds_content.filter(this.filterData)
         list_ds.forEach((row) => {
-            row['is_excluding'] = false
+            row['row_state'] = 'no_alterations'
         })
         const newState = {...this.state};
         newState.ds_content = list_ds;
@@ -53,31 +52,18 @@ class DataSourcePopup extends React.PureComponent {
 
     processRowUpdate=(newRow) =>{
         let new_ds_content = []
-        let edit_ds_content = this.state.edit_ds_content
         let list_ds = this.state.ds_content
         list_ds.forEach((row) => {
             if(row.name === newRow.name){
                 newRow['protocol'] = row['protocol']
-                let isnew = true
-                edit_ds_content = edit_ds_content.map((item)=>{
-                    if(item.name === newRow.name){
-                        isnew = false
-                        return (newRow)
-                    } else{
-                        return (item)
-                    }
-                })
-                if (isnew){
-                    edit_ds_content.push(newRow)
-                }
+                newRow['row_state'] = 'Edited'
                 new_ds_content.push(newRow)
             } else {
-                return(new_ds_content.push(row))
+                new_ds_content.push(row)
             }
         })
         const newState = {...this.state};
         newState.ds_content = new_ds_content;
-        newState.edit_ds_content = edit_ds_content;
         this.setState(newState);
         return (newRow);
     }
@@ -85,33 +71,34 @@ class DataSourcePopup extends React.PureComponent {
     handleClear=() =>{
         const newState = {...this.state};
         newState.ds_content = [];
-        newState.edit_ds_content = [];
         this.setState(newState);
     }
 
     handleOkClickDialog=() => {
-        this.state.edit_ds_content.forEach((row)=>{
-            this.props.onEditSave(this.props.global.backend_instance, row);
-        });
         this.state.ds_content.forEach((row)=>{
-            if(row.is_excluding){
+            if(row.row_state === 'Delete'){
                 this.props.onDeleteDataSource(
                     this.props.global.backend_instance,
                     row.name
                 );
+            } else if(row.row_state === 'Edited'){
+                this.props.onEditSave(
+                    this.props.global.backend_instance, 
+                    row
+                );
             }
         });
-        this.props.onHandleStateEditDs(false)
-        this.handleClear()
+        this.props.onHandleStateEditDs(false);
+        this.handleClear();
     }
 
     handleCancelClickDialog=() => {
-        this.props.onHandleStateEditDs(false)
-        this.handleClear()
+        this.props.onHandleStateEditDs(false);
+        this.handleClear();
     }
 
     handleProcessRowUpdateError=(error) => {
-        console.log("valor do error", error)
+        console.log("valor do error", error);
     }
 
     /** Description.
@@ -122,11 +109,19 @@ class DataSourcePopup extends React.PureComponent {
     }
 
     handleRestoreClick = (params) => () => {
+        let new_row = []
+        let list_ds_no_alterations = this.props.datasource.ds_content.filter(this.filterData)
+        list_ds_no_alterations.forEach((row_no_alterations) => {
+            if(row_no_alterations.name === params.id){
+                new_row = row_no_alterations
+                new_row['row_state'] = 'no_alterations'
+            }
+        })
         let list_ds = this.state.ds_content.map((row) => {
             if(row.name === params.id){
-                row['is_excluding'] = false
-            }
-            return(row)
+                row = new_row
+                return(row)
+            } else {return (row)}
         })
         const newState = {...this.state};
         newState.ds_content = list_ds;
@@ -136,7 +131,7 @@ class DataSourcePopup extends React.PureComponent {
     handleDeleteClick = (params) => () => {
         let list_ds = this.state.ds_content.map((row) => {
             if(row.name === params.id){
-                row['is_excluding'] = true
+                row['row_state'] = 'Delete'
             }
             return(row)
         })
@@ -146,9 +141,7 @@ class DataSourcePopup extends React.PureComponent {
     };
 
     getRowClassName=(params) => {
-        if (params.row.is_excluding) {
-            return 'Delete';
-        }
+        return (params.row.row_state)
     }
 
     /** Defines the component visualization.
@@ -191,6 +184,12 @@ class DataSourcePopup extends React.PureComponent {
                         sx={{
                             '& .Delete': {
                                 backgroundColor: '#ff6961',
+                                color: '#000',
+                            },'& .Edited': {
+                                backgroundColor: '#ffffd1',
+                                color: '#000',
+                            },'& .New_Row': {
+                                backgroundColor: '#81ff8a',
                                 color: '#000',
                             }
                         }}
