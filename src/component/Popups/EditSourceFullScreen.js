@@ -151,16 +151,18 @@ class DataSourcePopup extends React.PureComponent {
             {field: 'actions', type: 'actions', cellClassName: 'actions',
                 getActions: (params) => {
                     return[<GridActionsCellItem
-                      icon={<RestoreIcon />}
-                      label="Edit"
-                      onClick={this.handleRestoreClick(params)}
-                      color="inherit"
+                        icon={<RestoreIcon />}
+                        disabled={params.row.row_state === "Delete" || params.row.row_state === "Edited" ? false : true}
+                        label="Edit"
+                        onClick={this.handleRestoreClick(params)}
+                        color="inherit"
                     />,
                     <GridActionsCellItem
-                      icon={<DeleteIcon />}
-                      label="Delete"
-                      onClick={this.handleDeleteClick(params)}
-                      color="inherit"
+                        icon={<DeleteIcon />}
+                        disabled={params.row.row_state === "no_alterations" || params.row.row_state === "Edited" ? false : true}
+                        label="Delete"
+                        onClick={this.handleDeleteClick(params)}
+                        color="inherit"
                     />,
             ]},},
             {field: "name", headerName:"Name",editable: false, flex:1},
