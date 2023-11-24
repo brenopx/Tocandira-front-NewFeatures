@@ -21,7 +21,7 @@ import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import {
     GridActionsCellItem,
 } from '@mui/x-data-grid';
-import { Box } from '@mui/material';
+import { Button, Stack, TextField } from '@mui/material';
 //import './DataSourcePopup.css';
 
 // #######################################
@@ -37,53 +37,65 @@ class DataSourcePopup extends React.PureComponent {
     };
     /** Defines the component state variables */
     state = {
-        ds_content:[],
+        ds_content: [],
+        NameButton: "Add New Row"
     };
-    
-    handleDsContent=() => {
+
+    handleDsContent = () => {
         let list_ds = this.props.datasource.ds_content.filter(this.filterData)
         list_ds.forEach((row) => {
             row['row_state'] = 'no_alterations'
         })
-        const newState = {...this.state};
+        const newState = { ...this.state };
         newState.ds_content = list_ds;
         this.setState(newState);
     }
 
-    processRowUpdate=(newRow) =>{
+    processRowUpdate = (newRow) => {
         let new_ds_content = []
-        let list_ds = this.state.ds_content
+        let list_ds = JSON.parse(JSON.stringify(this.state.ds_content))
         list_ds.forEach((row) => {
-            if(row.name === newRow.name){
-                newRow['protocol'] = row['protocol']
-                newRow['row_state'] = 'Edited'
-                new_ds_content.push(newRow)
+            if (row.protocol.id === newRow.protocol.id) {
+                if (row.row_state === 'NewRow') {
+                    new_ds_content.push(newRow)
+                } else {
+                    newRow['protocol'] = row['protocol']
+                    newRow['row_state'] = 'Edited'
+                    new_ds_content.push(newRow)
+                }
             } else {
                 new_ds_content.push(row)
             }
         })
-        const newState = {...this.state};
+        const newState = { ...this.state };
         newState.ds_content = new_ds_content;
         this.setState(newState);
         return (newRow);
     }
 
-    handleClear=() =>{
-        const newState = {...this.state};
+    handleClear = () => {
+        const newState = { ...this.state };
         newState.ds_content = [];
         this.setState(newState);
     }
 
-    handleOkClickDialog=() => {
-        this.state.ds_content.forEach((row)=>{
-            if(row.row_state === 'Delete'){
+    handleOkClickDialog = () => {
+        this.state.ds_content.forEach((row) => {
+            if (row.row_state === 'Delete') {
                 this.props.onDeleteDataSource(
                     this.props.global.backend_instance,
                     row.name
                 );
-            } else if(row.row_state === 'Edited'){
+            } else if (row.row_state === 'Edited') {
                 this.props.onEditSave(
-                    this.props.global.backend_instance, 
+                    this.props.global.backend_instance,
+                    row
+                );
+            } else if (row.row_state === 'NewRow') {
+                delete row.protocol.id
+                row.collector_id = this.props.collector.selected.id
+                this.props.onNewSave(
+                    this.props.global.backend_instance,
                     row
                 );
             }
@@ -92,130 +104,179 @@ class DataSourcePopup extends React.PureComponent {
         this.handleClear();
     }
 
-    handleCancelClickDialog=() => {
+    handleCancelClickDialog = () => {
         this.props.onHandleStateEditDs(false);
         this.handleClear();
     }
 
-    handleProcessRowUpdateError=(error) => {
+    handleProcessRowUpdateError = (error) => {
         console.log("valor do error", error);
     }
 
     /** Description.
     * @param ``: 
     * @returns */
-    filterData=(row) => {
-        return(row.active && row.collector_id===this.props.collector.selected.id)
+    filterData = (row) => {
+        return (row.active && row.collector_id === this.props.collector.selected.id)
     }
 
     handleRestoreClick = (params) => () => {
-        let new_row = []
+        let row_defaults = JSON.parse(JSON.stringify(this.props.datasource.ds_defaults['Siemens']));
+        let copy_ds_content = JSON.parse(JSON.stringify(this.state.ds_content));
         let list_ds_no_alterations = this.props.datasource.ds_content.filter(this.filterData)
-        list_ds_no_alterations.forEach((row_no_alterations) => {
-            if(row_no_alterations.name === params.id){
-                new_row = row_no_alterations
-                new_row['row_state'] = 'no_alterations'
+        let new_list_ds = []
+        let row_no_alterations = undefined
+        list_ds_no_alterations.forEach((row) => {
+            if (row.protocol.id === params.id) {
+                row_no_alterations = row
+                row_no_alterations['row_state'] = 'no_alterations'
             }
         })
-        let list_ds = this.state.ds_content.map((row) => {
-            if(row.name === params.id){
-                row = new_row
-                return(row)
-            } else {return (row)}
-        })
-        const newState = {...this.state};
-        newState.ds_content = list_ds;
-        this.setState(newState);
-    };
-    
-    handleDeleteClick = (params) => () => {
-        let list_ds = this.state.ds_content.map((row) => {
-            if(row.name === params.id){
-                row['row_state'] = 'Delete'
+        new_list_ds = copy_ds_content.map((row) => {
+            if (row_no_alterations !== undefined && row_no_alterations.protocol.id === row.protocol.id) {
+                return (row_no_alterations)
+            } else if (row.row_state === "NewRow" && row.protocol.id === params.id) {
+                let row_empty = row
+                row_empty.name = row_defaults.name
+                row_empty.plc_ip = row_defaults.plc_ip
+                row_empty.plc_port = row_defaults.plc_port
+                row_empty.cycletime = row_defaults.cycletime
+                row_empty.timeout = row_defaults.timeout
+                return (row_empty)
+            } else {
+                return (row)
             }
-            return(row)
         })
-        const newState = {...this.state};
-        newState.ds_content = list_ds;
+        const newState = { ...this.state };
+        newState.ds_content = new_list_ds;
         this.setState(newState);
     };
 
-    getRowClassName=(params) => {
+    handleDeleteClick = (params) => () => {
+        let copy_ds_content = JSON.parse(JSON.stringify(this.state.ds_content));
+        let newlist_ds = []
+        if (params.row.row_state === "NewRow") {
+            copy_ds_content.map((row) => {
+                if (row.protocol.id === params.id) {
+                    return (row)
+                }
+                newlist_ds.push(row)
+                return (row)
+            })
+        } else {
+            copy_ds_content.map((row) => {
+                if (row.name === params.row.name) {
+                    row['row_state'] = 'Delete'
+                }
+                newlist_ds.push(row)
+                return (row)
+            })
+        }
+        const newState = { ...this.state };
+        newState.ds_content = newlist_ds;
+        this.setState(newState);
+    };
+
+    getRowClassName = (params) => {
         return (params.row.row_state)
     }
 
+    HandleClickButton = () => {
+        let copy_ds_content = JSON.parse(JSON.stringify(this.state.ds_content));
+        let new_row = JSON.parse(JSON.stringify(this.props.datasource.ds_defaults['Siemens']));
+        new_row.protocol.id = this.state.ds_content.length + 1
+        new_row.protocol.data.plc = new_row.protocol.data.plc.defaultValue
+        new_row.row_state = 'NewRow'
+        let new_list_ds = [...copy_ds_content, new_row]
+        const newState = { ...this.state };
+        newState.ds_content = new_list_ds
+        this.setState(newState);
+    }
+
     /** Defines the component visualization.
-    * @returns JSX syntax element */ 
-    render(){
+    * @returns JSX syntax element */
+    render() {
         const header = [
-            {field: 'actions', type: 'actions', cellClassName: 'actions',
+            {
+                field: 'actions', type: 'actions', cellClassName: 'actions',
                 getActions: (params) => {
-                    return[<GridActionsCellItem
+                    return [<GridActionsCellItem
                         icon={<RestoreIcon />}
-                        disabled={params.row.row_state === "Delete" || params.row.row_state === "Edited" ? false : true}
+                        disabled={params.row.row_state === "Delete" || params.row.row_state === "Edited" || params.row.row_state === "NewRow" ? false : true}
                         label="Edit"
                         onClick={this.handleRestoreClick(params)}
                         color="inherit"
                     />,
                     <GridActionsCellItem
                         icon={<DeleteIcon />}
-                        disabled={params.row.row_state === "no_alterations" || params.row.row_state === "Edited" ? false : true}
+                        disabled={params.row.row_state === "no_alterations" || params.row.row_state === "Edited" || params.row.row_state === "NewRow" ? false : true}
                         label="Delete"
                         onClick={this.handleDeleteClick(params)}
                         color="inherit"
                     />,
-            ]},},
-            {field: "name", headerName:"Name",editable: false, flex:1},
-            {field: "plc_ip", headerName:"IP Address",editable: true, flex:1},
-            {field: "plc_port", headerName:"PLC Port",editable: true, flex:1},
-            {field: "timeout", headerName:"Time Out",editable: true, flex:1},
-            {field: "cycletime", headerName:"Cycle Time",editable: true, flex:1},
-            {field: "protocol", headerName: "Protocol", editable: false, flex:1,
+                    ]
+                },
+            },
+            { field: "name", headerName: "Name", editable: true, flex: 1 },
+            { field: "plc_ip", headerName: "IP Address", editable: true, flex: 1 },
+            { field: "plc_port", headerName: "PLC Port", editable: true, flex: 1 },
+            { field: "timeout", headerName: "Time Out", editable: true, flex: 1 },
+            { field: "cycletime", headerName: "Cycle Time", editable: true, flex: 1 },
+            {
+                field: "protocol", headerName: "Protocol", editable: false, flex: 1,
                 valueGetter: (params) => params.row.protocol.name
             },
         ]
 
         const jsx_component = (
-                <DialogFullScreen
-                    open={this.props.OpenDialog}
-                    title={"Data Source"}
-                    onOkClick={this.handleOkClickDialog}
-                    onCancelClick={this.handleCancelClickDialog}
+            <DialogFullScreen
+                open={this.props.OpenDialog}
+                title={"Data Source"}
+                onOkClick={this.handleOkClickDialog}
+                onCancelClick={this.handleCancelClickDialog}
+            >
+                <Stack
+                    sx={{
+                        '& .Delete': {
+                            backgroundColor: '#f8d2d0',
+                            color: '#000',
+                        }, '& .Edited': {
+                            backgroundColor: '#ffffd1',
+                            color: '#000',
+                        }, '& .NewRow': {
+                            backgroundColor: '#d7f9d6',
+                            color: '#000',
+                        },
+                        'display': 'flex',
+                        'direction': 'row'
+                    }}
                 >
-                    <Box
-                        sx={{
-                            '& .Delete': {
-                                backgroundColor: '#ff6961',
-                                color: '#000',
-                            },'& .Edited': {
-                                backgroundColor: '#ffffd1',
-                                color: '#000',
-                            },'& .New_Row': {
-                                backgroundColor: '#81ff8a',
-                                color: '#000',
-                            }
-                        }}
-                    >
-                        <EditTable 
-                            headers={header}
-                            content_rows={this.state.ds_content}
-                            processRowUpdate={this.processRowUpdate}
-                            handleProcessRowUpdateError={this.handleProcessRowUpdateError}
-                            getRowClassName={(params) => this.getRowClassName(params)}
-                        />
-                    </Box>
-                </DialogFullScreen>
+                    <EditTable
+                        headers={header}
+                        content_rows={this.state.ds_content}
+                        processRowUpdate={this.processRowUpdate}
+                        handleProcessRowUpdateError={this.handleProcessRowUpdateError}
+                        getRowClassName={(params) => this.getRowClassName(params)}
+                    />
+                    <Stack direction='row' spacing='1rem' marginTop='1rem' alignSelf='start'>
+                        <Button variant="contained" onClick={this.HandleClickButton} >
+                            {this.state.NameButton}
+                        </Button>
+                        {/* <TextField></TextField> */}
+                    </Stack>
+                </Stack>
+            </DialogFullScreen>
         );
-        return(jsx_component);
+        return (jsx_component);
     }
 
-    componentDidMount=() => {
+    componentDidMount = () => {
         this.handleDsContent();
     }
 }
 
 /** Map the Redux state to some component props */
-const reduxStateToProps = (state) =>({
+const reduxStateToProps = (state) => ({
     global: state.global,
     popups: state.popups,
     datapoint: state.datapoint,
@@ -224,11 +285,12 @@ const reduxStateToProps = (state) =>({
 });
 
 /** Map the Redux actions dispatch to some component props */
-const reduxDispatchToProps = (dispatch) =>({
-    onHandleStateEditDs:(state)=>dispatch(datasourceActions.handleStateEditDs(state)),
-    onEditSave:(api,info)=>dispatch(datasourceActions.putData(api,info)),
-    onDeleteDataSource:(api,ds_name)=>dispatch(datasourceActions.deleteData(api,ds_name)),
+const reduxDispatchToProps = (dispatch) => ({
+    onHandleStateEditDs: (state) => dispatch(datasourceActions.handleStateEditDs(state)),
+    onEditSave: (api, info) => dispatch(datasourceActions.putData(api, info)),
+    onDeleteDataSource: (api, ds_name) => dispatch(datasourceActions.deleteData(api, ds_name)),
+    onNewSave: (api, info) => dispatch(datasourceActions.pushData(api, info)),
 });
 
 // Make this component visible on import
-export default connect(reduxStateToProps,reduxDispatchToProps)(DataSourcePopup);
+export default connect(reduxStateToProps, reduxDispatchToProps)(DataSourcePopup);
