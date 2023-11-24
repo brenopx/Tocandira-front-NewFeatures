@@ -58,12 +58,12 @@ class DataSourcePopup extends React.PureComponent {
             if(row.table_id === newRow.table_id){
                 if(row.row_state === 'NewRow'){
                     new_ds_content.push(newRow)
-                }else{
+                }else {
                     newRow['protocol'] = row['protocol']
                     newRow['row_state'] = 'Edited'
                     new_ds_content.push(newRow)
                 }
-            }else{
+            }else {
                 new_ds_content.push(row)
             }
         })
@@ -136,7 +136,7 @@ class DataSourcePopup extends React.PureComponent {
                 row_empty.cycletime = row_defaults.cycletime
                 row_empty.timeout = row_defaults.timeout
                 return(row_empty)
-            } else{
+            } else {
                 return(row)
             }
         })
@@ -156,7 +156,7 @@ class DataSourcePopup extends React.PureComponent {
                 newlist_ds.push(row)
                 return(row)
             })
-        } else{
+        } else {
             copy_ds_content.map( (row) => {
                 if(row.table_id === params.id){
                     row['row_state'] = 'Delete'
@@ -177,7 +177,7 @@ class DataSourcePopup extends React.PureComponent {
     HandleClickButtonNewRows= () =>{
         let copy_ds_content = JSON.parse(JSON.stringify(this.state.ds_content));
         let new_row = JSON.parse(JSON.stringify(this.props.datasource.ds_defaults['Siemens']));
-        new_row.table_id = this.state.ds_content.length + 1
+        new_row.table_id = this.state.ds_content.length
         new_row.protocol.data.plc = new_row.protocol.data.plc.defaultValue
         new_row.row_state = 'NewRow'
         let new_list_ds = [...copy_ds_content, new_row]
