@@ -41,57 +41,57 @@ class DataSourcePopup extends React.PureComponent {
         NameButton: "Add New Row"
     };
 
-    handleDsContent = () => {
+    handleDsContent= () =>{
         let list_ds = this.props.datasource.ds_content.filter(this.filterData)
-        list_ds.forEach((row) => {
+        list_ds.forEach( (row) =>{
             row['row_state'] = 'no_alterations'
         })
-        const newState = { ...this.state };
+        const newState = {...this.state};
         newState.ds_content = list_ds;
         this.setState(newState);
     }
 
-    processRowUpdate = (newRow) => {
+    processRowUpdate= (newRow) =>{
         let new_ds_content = []
         let list_ds = JSON.parse(JSON.stringify(this.state.ds_content))
-        list_ds.forEach((row) => {
-            if (row.protocol.id === newRow.protocol.id) {
-                if (row.row_state === 'NewRow') {
+        list_ds.forEach( (row) =>{
+            if(row.protocol.id === newRow.protocol.id){
+                if(row.row_state === 'NewRow'){
                     new_ds_content.push(newRow)
-                } else {
+                }else{
                     newRow['protocol'] = row['protocol']
                     newRow['row_state'] = 'Edited'
                     new_ds_content.push(newRow)
                 }
-            } else {
+            }else{
                 new_ds_content.push(row)
             }
         })
-        const newState = { ...this.state };
+        const newState = {...this.state};
         newState.ds_content = new_ds_content;
         this.setState(newState);
-        return (newRow);
+        return(newRow);
     }
 
-    handleClear = () => {
-        const newState = { ...this.state };
+    handleClear= () =>{
+        const newState = {...this.state};
         newState.ds_content = [];
         this.setState(newState);
     }
 
-    handleOkClickDialog = () => {
-        this.state.ds_content.forEach((row) => {
-            if (row.row_state === 'Delete') {
+    handleOkClickDialog= () =>{
+        this.state.ds_content.forEach( (row) =>{
+            if(row.row_state === 'Delete'){
                 this.props.onDeleteDataSource(
                     this.props.global.backend_instance,
                     row.name
                 );
-            } else if (row.row_state === 'Edited') {
+            }else if(row.row_state === 'Edited'){
                 this.props.onEditSave(
                     this.props.global.backend_instance,
                     row
                 );
-            } else if (row.row_state === 'NewRow') {
+            }else if(row.row_state === 'NewRow'){
                 delete row.protocol.id
                 row.collector_id = this.props.collector.selected.id
                 this.props.onNewSave(
@@ -104,12 +104,12 @@ class DataSourcePopup extends React.PureComponent {
         this.handleClear();
     }
 
-    handleCancelClickDialog = () => {
+    handleCancelClickDialog= () =>{
         this.props.onHandleStateEditDs(false);
         this.handleClear();
     }
 
-    handleProcessRowUpdateError = (error) => {
+    handleProcessRowUpdateError= (error) => {
         console.log("valor do error", error);
     }
 
@@ -120,34 +120,34 @@ class DataSourcePopup extends React.PureComponent {
         return (row.active && row.collector_id === this.props.collector.selected.id)
     }
 
-    handleRestoreClick = (params) => () => {
+    handleRestoreClick= (params) => () =>{
         let row_defaults = JSON.parse(JSON.stringify(this.props.datasource.ds_defaults['Siemens']));
         let copy_ds_content = JSON.parse(JSON.stringify(this.state.ds_content));
         let list_ds_no_alterations = this.props.datasource.ds_content.filter(this.filterData)
         let new_list_ds = []
         let row_no_alterations = undefined
-        list_ds_no_alterations.forEach((row) => {
-            if (row.protocol.id === params.id) {
+        list_ds_no_alterations.forEach( (row) => {
+            if(row.protocol.id === params.id){
                 row_no_alterations = row
                 row_no_alterations['row_state'] = 'no_alterations'
             }
         })
-        new_list_ds = copy_ds_content.map((row) => {
-            if (row_no_alterations !== undefined && row_no_alterations.protocol.id === row.protocol.id) {
+        new_list_ds = copy_ds_content.map( (row) => {
+            if(row_no_alterations !== undefined && row_no_alterations.protocol.id === row.protocol.id){
                 return (row_no_alterations)
-            } else if (row.row_state === "NewRow" && row.protocol.id === params.id) {
+            } else if(row.row_state === "NewRow" && row.protocol.id === params.id){
                 let row_empty = row
                 row_empty.name = row_defaults.name
                 row_empty.plc_ip = row_defaults.plc_ip
                 row_empty.plc_port = row_defaults.plc_port
                 row_empty.cycletime = row_defaults.cycletime
                 row_empty.timeout = row_defaults.timeout
-                return (row_empty)
-            } else {
-                return (row)
+                return(row_empty)
+            } else{
+                return(row)
             }
         })
-        const newState = { ...this.state };
+        const newState = {...this.state};
         newState.ds_content = new_list_ds;
         this.setState(newState);
     };
@@ -155,52 +155,52 @@ class DataSourcePopup extends React.PureComponent {
     handleDeleteClick = (params) => () => {
         let copy_ds_content = JSON.parse(JSON.stringify(this.state.ds_content));
         let newlist_ds = []
-        if (params.row.row_state === "NewRow") {
+        if(params.row.row_state === "NewRow"){
             copy_ds_content.map((row) => {
-                if (row.protocol.id === params.id) {
-                    return (row)
+                if(row.protocol.id === params.id){
+                    return(row)
                 }
                 newlist_ds.push(row)
-                return (row)
+                return(row)
             })
-        } else {
-            copy_ds_content.map((row) => {
-                if (row.name === params.row.name) {
+        } else{
+            copy_ds_content.map( (row) => {
+                if(row.name === params.row.name){
                     row['row_state'] = 'Delete'
                 }
                 newlist_ds.push(row)
-                return (row)
+                return(row)
             })
         }
-        const newState = { ...this.state };
+        const newState = {...this.state};
         newState.ds_content = newlist_ds;
         this.setState(newState);
     };
 
-    getRowClassName = (params) => {
-        return (params.row.row_state)
+    getRowClassName= (params) =>{
+        return(params.row.row_state)
     }
 
-    HandleClickButton = () => {
+    HandleClickButton= () =>{
         let copy_ds_content = JSON.parse(JSON.stringify(this.state.ds_content));
         let new_row = JSON.parse(JSON.stringify(this.props.datasource.ds_defaults['Siemens']));
         new_row.protocol.id = this.state.ds_content.length + 1
         new_row.protocol.data.plc = new_row.protocol.data.plc.defaultValue
         new_row.row_state = 'NewRow'
         let new_list_ds = [...copy_ds_content, new_row]
-        const newState = { ...this.state };
+        const newState = {...this.state};
         newState.ds_content = new_list_ds
         this.setState(newState);
     }
 
     /** Defines the component visualization.
     * @returns JSX syntax element */
-    render() {
+    render(){
         const header = [
             {
                 field: 'actions', type: 'actions', cellClassName: 'actions',
                 getActions: (params) => {
-                    return [<GridActionsCellItem
+                    return[<GridActionsCellItem
                         icon={<RestoreIcon />}
                         disabled={params.row.row_state === "Delete" || params.row.row_state === "Edited" || params.row.row_state === "NewRow" ? false : true}
                         label="Edit"
@@ -262,21 +262,21 @@ class DataSourcePopup extends React.PureComponent {
                         <Button variant="contained" onClick={this.HandleClickButton} >
                             {this.state.NameButton}
                         </Button>
-                        {/* <TextField></TextField> */}
+                        <TextField></TextField>
                     </Stack>
                 </Stack>
             </DialogFullScreen>
         );
-        return (jsx_component);
+        return(jsx_component);
     }
 
-    componentDidMount = () => {
+    componentDidMount= () =>{
         this.handleDsContent();
     }
 }
 
 /** Map the Redux state to some component props */
-const reduxStateToProps = (state) => ({
+const reduxStateToProps = (state) =>({
     global: state.global,
     popups: state.popups,
     datapoint: state.datapoint,
@@ -285,7 +285,7 @@ const reduxStateToProps = (state) => ({
 });
 
 /** Map the Redux actions dispatch to some component props */
-const reduxDispatchToProps = (dispatch) => ({
+const reduxDispatchToProps = (dispatch) =>({
     onHandleStateEditDs: (state) => dispatch(datasourceActions.handleStateEditDs(state)),
     onEditSave: (api, info) => dispatch(datasourceActions.putData(api, info)),
     onDeleteDataSource: (api, ds_name) => dispatch(datasourceActions.deleteData(api, ds_name)),
