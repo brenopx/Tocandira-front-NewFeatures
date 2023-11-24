@@ -26,7 +26,11 @@ const reducer = (state=initialState, action) => {
     // Check and select correct action
     switch ( action.type ) {
         case actionTypes.GET_DPDATA:
-            newState.dp_content = [...action.dplist];
+            let new_dp_content = [...action.dplist]
+            new_dp_content.forEach((row, id) => {
+                row['table_id'] = id
+            })
+            newState.dp_content = new_dp_content;
             break
         case actionTypes.UPDATE_DPDATA_PENDING:
             dp_formated_list = action.dp_list.map(

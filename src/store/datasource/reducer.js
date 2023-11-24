@@ -25,7 +25,11 @@ const reducer = (state=initialState, action) => {
     // Check and select correct action
     switch ( action.type ) {
         case actionTypes.GET_DSDATA:
-            newState.ds_content = [...action.dslist];
+            let new_ds_content = [...action.dslist]
+            new_ds_content.forEach((row, id) => {
+                row['table_id'] = id
+            })
+            newState.ds_content = new_ds_content;
             break
         case actionTypes.GET_AVAIL_PROTOCOLS:
             newState.protocol_avail = [...action.protocols.menuItems];
