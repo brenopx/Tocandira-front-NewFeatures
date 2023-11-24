@@ -38,7 +38,7 @@ class DataSourcePopup extends React.PureComponent {
     /** Defines the component state variables */
     state = {
         ds_content: [],
-        NameButton: "Add New Row"
+        NameButtonNewRows: "Add New Rows"
     };
 
     handleDsContent= () =>{
@@ -55,7 +55,7 @@ class DataSourcePopup extends React.PureComponent {
         let new_ds_content = []
         let list_ds = JSON.parse(JSON.stringify(this.state.ds_content))
         list_ds.forEach( (row) =>{
-            if(row.protocol.id === newRow.protocol.id){
+            if(row.table_id === newRow.table_id){
                 if(row.row_state === 'NewRow'){
                     new_ds_content.push(newRow)
                 }else{
@@ -113,13 +113,6 @@ class DataSourcePopup extends React.PureComponent {
         console.log("valor do error", error);
     }
 
-    /** Description.
-    * @param ``: 
-    * @returns */
-    filterData = (row) => {
-        return (row.active && row.collector_id === this.props.collector.selected.id)
-    }
-
     handleRestoreClick= (params) => () =>{
         let row_defaults = JSON.parse(JSON.stringify(this.props.datasource.ds_defaults['Siemens']));
         let copy_ds_content = JSON.parse(JSON.stringify(this.state.ds_content));
@@ -127,15 +120,15 @@ class DataSourcePopup extends React.PureComponent {
         let new_list_ds = []
         let row_no_alterations = undefined
         list_ds_no_alterations.forEach( (row) => {
-            if(row.protocol.id === params.id){
+            if(row.table_id === params.id){
                 row_no_alterations = row
                 row_no_alterations['row_state'] = 'no_alterations'
             }
         })
         new_list_ds = copy_ds_content.map( (row) => {
-            if(row_no_alterations !== undefined && row_no_alterations.protocol.id === row.protocol.id){
+            if(row_no_alterations !== undefined && row_no_alterations.table_id === row.table_id){
                 return (row_no_alterations)
-            } else if(row.row_state === "NewRow" && row.protocol.id === params.id){
+            } else if(row.row_state === "NewRow" && row.table_id === params.id){
                 let row_empty = row
                 row_empty.name = row_defaults.name
                 row_empty.plc_ip = row_defaults.plc_ip
@@ -152,12 +145,12 @@ class DataSourcePopup extends React.PureComponent {
         this.setState(newState);
     };
 
-    handleDeleteClick = (params) => () => {
+    handleDeleteClick= (params) => () =>{
         let copy_ds_content = JSON.parse(JSON.stringify(this.state.ds_content));
         let newlist_ds = []
         if(params.row.row_state === "NewRow"){
-            copy_ds_content.map((row) => {
-                if(row.protocol.id === params.id){
+            copy_ds_content.map( (row) => {
+                if(row.table_id === params.id){
                     return(row)
                 }
                 newlist_ds.push(row)
@@ -165,7 +158,7 @@ class DataSourcePopup extends React.PureComponent {
             })
         } else{
             copy_ds_content.map( (row) => {
-                if(row.name === params.row.name){
+                if(row.table_id === params.id){
                     row['row_state'] = 'Delete'
                 }
                 newlist_ds.push(row)
@@ -181,16 +174,23 @@ class DataSourcePopup extends React.PureComponent {
         return(params.row.row_state)
     }
 
-    HandleClickButton= () =>{
+    HandleClickButtonNewRows= () =>{
         let copy_ds_content = JSON.parse(JSON.stringify(this.state.ds_content));
         let new_row = JSON.parse(JSON.stringify(this.props.datasource.ds_defaults['Siemens']));
-        new_row.protocol.id = this.state.ds_content.length + 1
+        new_row.table_id = this.state.ds_content.length + 1
         new_row.protocol.data.plc = new_row.protocol.data.plc.defaultValue
         new_row.row_state = 'NewRow'
         let new_list_ds = [...copy_ds_content, new_row]
         const newState = {...this.state};
         newState.ds_content = new_list_ds
         this.setState(newState);
+    }
+
+    /** Description.
+    * @param ``: 
+    * @returns */
+    filterData= (row) =>{
+        return(row.active && row.collector_id === this.props.collector.selected.id)
     }
 
     /** Defines the component visualization.
@@ -240,10 +240,10 @@ class DataSourcePopup extends React.PureComponent {
                         '& .Delete': {
                             backgroundColor: '#f8d2d0',
                             color: '#000',
-                        }, '& .Edited': {
+                        },'& .Edited': {
                             backgroundColor: '#ffffd1',
                             color: '#000',
-                        }, '& .NewRow': {
+                        },'& .NewRow': {
                             backgroundColor: '#d7f9d6',
                             color: '#000',
                         },
@@ -259,10 +259,11 @@ class DataSourcePopup extends React.PureComponent {
                         getRowClassName={(params) => this.getRowClassName(params)}
                     />
                     <Stack direction='row' spacing='1rem' marginTop='1rem' alignSelf='start'>
-                        <Button variant="contained" onClick={this.HandleClickButton} >
-                            {this.state.NameButton}
+                        <Button variant="contained" onClick={this.HandleClickButtonNewRows} >
+                            {this.state.NameButtonNewRows}
                         </Button>
-                        <TextField></TextField>
+                        <TextField>
+                        </TextField>
                     </Stack>
                 </Stack>
             </DialogFullScreen>
