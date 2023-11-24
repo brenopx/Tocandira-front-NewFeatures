@@ -38,13 +38,14 @@ class DataTable extends React.PureComponent {
         const jsx_component = (
             <DataGrid
                 columns={this.props.headers}
-                getRowId={(row) => row.protocol.id}
+                getRowId={(row) => row.table_id}
                 rows={this.props.content_rows}
                 editMode="row"
                 processRowUpdate={this.props.processRowUpdate}
                 onProcessRowUpdateError={this.props.handleProcessRowUpdateError}
                 getRowClassName={this.props.getRowClassName}
-            />)
+            />
+        )
         return(jsx_component);
     }
     
