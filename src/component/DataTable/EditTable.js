@@ -12,7 +12,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { DataGrid } from '@mui/x-data-grid';
-import { darken, lighten, styled } from '@mui/material/styles';
 // Local Imports
 
 // #######################################
@@ -39,7 +38,7 @@ class DataTable extends React.PureComponent {
         const jsx_component = (
             <DataGrid
                 columns={this.props.headers}
-                getRowId={(row) => row.name}
+                getRowId={(row) => row.protocol.id}
                 rows={this.props.content_rows}
                 editMode="row"
                 processRowUpdate={this.props.processRowUpdate}
