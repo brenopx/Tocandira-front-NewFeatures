@@ -9,4 +9,4 @@
 export const GET_DSDATA = 'GET_DSDATA';
 export const GET_AVAIL_PROTOCOLS = 'GET_AVAIL_PROTOCOLS';
 export const GET_DS_DEFAULTS = 'GET_DS_DEFAULTS';
-export const STATE_EDIT_DS = "STATE_EDIT_DS";
+export const STATE_EDIT_DS = 'STATE_EDIT_DS';
