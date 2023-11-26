@@ -21,8 +21,8 @@ import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import {
     GridActionsCellItem,
 } from '@mui/x-data-grid';
-import { Button, Stack, TextField } from '@mui/material';
-//import './DataSourcePopup.css';
+import { Button, FormControl, InputLabel, 
+    OutlinedInput, Stack } from '@mui/material';//import './DataSourcePopup.css';
 
 // #######################################
 
@@ -37,17 +37,20 @@ class DataSourcePopup extends React.PureComponent {
     };
     /** Defines the component state variables */
     state = {
-        dp_content:[],
-        NameButtonNewRows:"Add New Rows"
+        dp_content: [],
+        name_button_new_rows: "Add New Rows",
+        number_rows: 1,
+        length_dp_content: null
     };
     
     handleDsContent= () =>{
         let list_dp = this.props.datapoint.dp_content.filter(this.filterData)
-        list_dp.forEach((row)=>{
+        list_dp.forEach( (row) =>{
             row['row_state'] = 'no_alterations'
         })
         const newState = {...this.state};
         newState.dp_content = list_dp;
+        newState.length_dp_content = list_dp.length
         this.setState(newState);
     }
 
@@ -91,7 +94,7 @@ class DataSourcePopup extends React.PureComponent {
                     this.props.global.backend_instance, 
                     row
                 );
-            }else if(row.row_state === 'NewRow'){
+            } else if(row.row_state === 'NewRow'){
                 this.props.onNewSave(
                     this.props.global.backend_instance,
                     row
@@ -172,15 +175,31 @@ class DataSourcePopup extends React.PureComponent {
         return(params.row.row_state)
     }
 
+    handleChangeNumberRows = (event) =>{
+        const newState = {...this.state};
+        newState.number_rows = event.target.value
+        this.setState(newState);
+    };
+
     HandleClickButtonNewRows= () =>{
         let copy_dp_content = JSON.parse(JSON.stringify(this.state.dp_content));
-        let new_row = JSON.parse(JSON.stringify(this.props.datapoint.dp_defaults['Siemens']));
-        new_row.table_id = this.state.dp_content.length
-        new_row.num_type = new_row.num_type.defaultValue
-        new_row.row_state = 'NewRow'
-        let new_list_dp = [...copy_dp_content, new_row]
+        let new_list_dp = [...copy_dp_content]
+        let counter = this.state.number_rows
+        let number_id = this.state.length_dp_content
+
+        while (counter >= 1) {
+            let new_row = JSON.parse(JSON.stringify(this.props.datapoint.dp_defaults['Siemens']));
+            new_row.table_id = number_id
+            new_row.num_type = new_row.num_type.defaultValue
+            new_row.row_state = 'NewRow'
+            new_list_dp = [...new_list_dp, new_row]
+            counter -= 1
+            number_id += 1
+        }
+
         const newState = {...this.state};
         newState.dp_content = new_list_dp
+        newState.length_dp_content = number_id
         this.setState(newState);
     }
 
@@ -201,23 +220,25 @@ class DataSourcePopup extends React.PureComponent {
     * @returns JSX syntax element */ 
     render(){
         const header = [
-            {field: 'actions', type: 'actions', cellClassName: 'actions',
-            getActions: (params) => {
-                return[<GridActionsCellItem
-                    icon={<RestoreIcon />}
-                    disabled={params.row.row_state === "Delete" || params.row.row_state === "Edited" || params.row.row_state === "NewRow" ? false : true}
-                    label="Edit"
-                    onClick={this.handleRestoreClick(params)}
-                    color="inherit"
-                />,
-                <GridActionsCellItem
-                    icon={<DeleteIcon />}
-                    disabled={params.row.row_state === "no_alterations" || params.row.row_state === "Edited" || params.row.row_state === "NewRow" ? false : true}
-                    label="Delete"
-                    onClick={this.handleDeleteClick(params)}
-                    color="inherit"
-                />,
-            ]},},
+            {
+                field: 'actions', type: 'actions', cellClassName: 'actions',
+                getActions: (params) => {
+                    return[<GridActionsCellItem
+                        icon={<RestoreIcon />}
+                        disabled={params.row.row_state === "Delete" || params.row.row_state === "Edited" || params.row.row_state === "NewRow" ? false : true}
+                        label="Edit"
+                        onClick={this.handleRestoreClick(params)}
+                        color="inherit"
+                    />,
+                    <GridActionsCellItem
+                        icon={<DeleteIcon />}
+                        disabled={params.row.row_state === "no_alterations" || params.row.row_state === "Edited" || params.row.row_state === "NewRow" ? false : true}
+                        label="Delete"
+                        onClick={this.handleDeleteClick(params)}
+                        color="inherit"
+                    />,]
+                },
+            },
             {field: "name", headerName:"Name",editable: true, flex:1},
             {field: "description", headerName:"Description",editable: true, flex:1},
             {field: "num_type", headerName:"Num Type",editable: true, flex:1},
@@ -259,10 +280,15 @@ class DataSourcePopup extends React.PureComponent {
                         />
                         <Stack direction='row' spacing='1rem' marginTop='1rem' alignSelf='start'>
                         <Button variant="contained" onClick={this.HandleClickButtonNewRows} >
-                            {this.state.NameButtonNewRows}
+                            {this.state.name_button_new_rows}
                         </Button>
-                        <TextField>
-                        </TextField>
+                        <FormControl>
+                            <InputLabel htmlFor="component-outlined">{this.state.name_button_new_rows}</InputLabel>
+                            <OutlinedInput id="component-Number_Rows" type="number"
+                                value={this.state.number_rows} label={this.state.name_button_new_rows}
+                                onChange={this.handleChangeNumberRows} 
+                            />
+                        </FormControl>
                     </Stack>
                     </Stack>
                 </DialogFullScreen>
@@ -287,9 +313,9 @@ const reduxStateToProps = (state) =>({
 /** Map the Redux actions dispatch to some component props */
 const reduxDispatchToProps = (dispatch) =>({
     onHandleStateEditDp: (state) => dispatch(datapointActions.handleStateEditDp(state)),
-    onEditSave: (api,info) => dispatch(datapointActions.putData(api,info)),
-    onDeleteDataPoint: (api,dp_name) => dispatch(datapointActions.deleteData(api,dp_name)),
-    onNewSave:(api,info)=>dispatch(datapointActions.pushData(api,info)),
+    onEditSave: (api, info) => dispatch(datapointActions.putData(api, info)),
+    onDeleteDataPoint: (api, dp_name) => dispatch(datapointActions.deleteData(api, dp_name)),
+    onNewSave: (api, info) => dispatch(datapointActions.pushData(api, info)),
 });
 
 // Make this component visible on import

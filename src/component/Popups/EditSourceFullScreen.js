@@ -21,7 +21,8 @@ import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import {
     GridActionsCellItem,
 } from '@mui/x-data-grid';
-import { Button, Stack, TextField } from '@mui/material';
+import { Button, FormControl, InputLabel, 
+    OutlinedInput, Stack } from '@mui/material';
 //import './DataSourcePopup.css';
 
 // #######################################
@@ -38,7 +39,9 @@ class DataSourcePopup extends React.PureComponent {
     /** Defines the component state variables */
     state = {
         ds_content: [],
-        NameButtonNewRows: "Add New Rows"
+        name_button_new_rows: "Add New Rows",
+        number_rows: 1,
+        length_ds_content: null
     };
 
     handleDsContent= () =>{
@@ -48,6 +51,7 @@ class DataSourcePopup extends React.PureComponent {
         })
         const newState = {...this.state};
         newState.ds_content = list_ds;
+        newState.length_ds_content = list_ds.length
         this.setState(newState);
     }
 
@@ -58,7 +62,7 @@ class DataSourcePopup extends React.PureComponent {
             if(row.table_id === newRow.table_id){
                 if(row.row_state === 'NewRow'){
                     new_ds_content.push(newRow)
-                }else {
+                } else {
                     newRow['protocol'] = row['protocol']
                     newRow['row_state'] = 'Edited'
                     new_ds_content.push(newRow)
@@ -86,12 +90,12 @@ class DataSourcePopup extends React.PureComponent {
                     this.props.global.backend_instance,
                     row.name
                 );
-            }else if(row.row_state === 'Edited'){
+            } else if(row.row_state === 'Edited'){
                 this.props.onEditSave(
                     this.props.global.backend_instance,
                     row
                 );
-            }else if(row.row_state === 'NewRow'){
+            } else if(row.row_state === 'NewRow'){
                 delete row.protocol.id
                 row.collector_id = this.props.collector.selected.id
                 this.props.onNewSave(
@@ -174,15 +178,29 @@ class DataSourcePopup extends React.PureComponent {
         return(params.row.row_state)
     }
 
+    handleChangeNumberRows = (event) =>{
+        const newState = {...this.state};
+        newState.number_rows = event.target.value
+        this.setState(newState);
+    };
+
     HandleClickButtonNewRows= () =>{
         let copy_ds_content = JSON.parse(JSON.stringify(this.state.ds_content));
-        let new_row = JSON.parse(JSON.stringify(this.props.datasource.ds_defaults['Siemens']));
-        new_row.table_id = this.state.ds_content.length
-        new_row.protocol.data.plc = new_row.protocol.data.plc.defaultValue
-        new_row.row_state = 'NewRow'
-        let new_list_ds = [...copy_ds_content, new_row]
+        let new_list_ds = [...copy_ds_content]
+        let counter = this.state.number_rows
+        let number_id = this.state.length_ds_content
+        while (counter >= 1) {
+            let new_row = JSON.parse(JSON.stringify(this.props.datasource.ds_defaults['Siemens']));
+            new_row.table_id = number_id
+            new_row.protocol.data.plc = new_row.protocol.data.plc.defaultValue
+            new_row.row_state = 'NewRow'
+            new_list_ds = [...new_list_ds, new_row]
+            counter -= 1
+            number_id += 1
+        }
         const newState = {...this.state};
         newState.ds_content = new_list_ds
+        newState.length_ds_content = number_id
         this.setState(newState);
     }
 
@@ -213,15 +231,14 @@ class DataSourcePopup extends React.PureComponent {
                         label="Delete"
                         onClick={this.handleDeleteClick(params)}
                         color="inherit"
-                    />,
-                    ]
+                    />,]
                 },
             },
-            { field: "name", headerName: "Name", editable: true, flex: 1 },
-            { field: "plc_ip", headerName: "IP Address", editable: true, flex: 1 },
-            { field: "plc_port", headerName: "PLC Port", editable: true, flex: 1 },
-            { field: "timeout", headerName: "Time Out", editable: true, flex: 1 },
-            { field: "cycletime", headerName: "Cycle Time", editable: true, flex: 1 },
+            {field: "name", headerName: "Name", editable: true, flex: 1 },
+            {field: "plc_ip", headerName: "IP Address", editable: true, flex: 1 },
+            {field: "plc_port", headerName: "PLC Port", editable: true, flex: 1 },
+            {field: "timeout", headerName: "Time Out", editable: true, flex: 1 },
+            {field: "cycletime", headerName: "Cycle Time", editable: true, flex: 1 },
             {
                 field: "protocol", headerName: "Protocol", editable: false, flex: 1,
                 valueGetter: (params) => params.row.protocol.name
@@ -260,10 +277,15 @@ class DataSourcePopup extends React.PureComponent {
                     />
                     <Stack direction='row' spacing='1rem' marginTop='1rem' alignSelf='start'>
                         <Button variant="contained" onClick={this.HandleClickButtonNewRows} >
-                            {this.state.NameButtonNewRows}
+                            {this.state.name_button_new_rows}
                         </Button>
-                        <TextField>
-                        </TextField>
+                        <FormControl>
+                            <InputLabel htmlFor="component-outlined">{this.state.name_button_new_rows}</InputLabel>
+                            <OutlinedInput id="component-Number_Rows" type="number"
+                                value={this.state.number_rows} label={this.state.name_button_new_rows}
+                                onChange={this.handleChangeNumberRows} 
+                            />
+                        </FormControl>
                     </Stack>
                 </Stack>
             </DialogFullScreen>
