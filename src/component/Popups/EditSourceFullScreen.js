@@ -218,22 +218,50 @@ class DataSourcePopup extends React.PureComponent {
         }    
     };
 
-    columnActions=(params) =>{
-        let component = ([<GridActionsCellItem
-            icon={<RestoreIcon />}
-            disabled={this.stateRowsRestore(params)}
-            label="Restore"
-            onClick={this.handleRestoreClick(params)}
-            color="inherit"
-        />,
-        <GridActionsCellItem
-            icon={<DeleteIcon />}
-            disabled={this.stateRowsDelete(params)}
-            label="Delete"
-            onClick={this.handleDeleteClick(params)}
-            color="inherit"
-        />])
-        return (component)
+    stateRowStateline = (params) =>{
+        if(params.row.row_state === "Delete" || params.row.row_state === "errorDelete"){
+            return(true)
+        }else{
+            return(false)
+        }    
+    };
+
+    columnActions = (params) =>{
+        let icon = null
+        if(params.row.row_state === "errorDelete" 
+        || params.row.row_state === "errorEdited" 
+        || params.row.row_state === "errorNewRow"){
+            icon = (<CloseIcon />) 
+        }else if(params.row.row_state === 'no_alterations'){
+            icon = (<DoneIcon />) 
+        }else{
+            icon = (<HourglassEmptyIcon />) 
+        }
+        let component = ([
+                <Stack flexDirection='row'>
+                    <GridActionsCellItem
+                        icon={icon}
+                        disabled={this.stateRowStateline(params)}
+                        label="state"
+                        color="inherit"
+                    />
+                    <GridActionsCellItem
+                        icon={<RestoreIcon />}
+                        disabled={this.stateRowsRestore(params)}
+                        label="Restore"
+                        onClick={this.handleRestoreClick(params)}
+                        color="inherit"
+                    />
+                    <GridActionsCellItem
+                        icon={<DeleteIcon />}
+                        disabled={this.stateRowsDelete(params)}
+                        label="Delete"
+                        onClick={this.handleDeleteClick(params)}
+                        color="inherit"
+                    />
+                </Stack>
+            ])
+        return(component)
     };
 
     /** Description.
