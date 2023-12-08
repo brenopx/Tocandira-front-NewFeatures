@@ -52,7 +52,7 @@ class DataSourcePopup extends React.PureComponent {
         newState.dp_content = list_dp;
         newState.length_dp_content = list_dp.length
         this.setState(newState);
-    }
+    };
 
     processRowUpdate= (newRow) =>{
         let new_dp_content = []
@@ -74,13 +74,13 @@ class DataSourcePopup extends React.PureComponent {
         newState.dp_content = new_dp_content;
         this.setState(newState);
         return (newRow);
-    }
+    };
 
     handleClear= () =>{
         const newState = {...this.state};
         newState.dp_content = [];
         this.setState(newState);
-    }
+    };
 
     handleOkClickDialog= () =>{
         this.state.dp_content.forEach((row)=>{
@@ -103,16 +103,16 @@ class DataSourcePopup extends React.PureComponent {
         });
         this.props.onHandleStateEditDp(false);
         this.handleClear();
-    }
+    };
 
     handleCancelClickDialog= () =>{
         this.props.onHandleStateEditDp(false);
         this.handleClear();
-    }
+    };
 
     handleProcessRowUpdateError= (error) => {
         console.log("valor do error", error);
-    }
+    };
 
     handleRestoreClick= (params) => () =>{
         let row_defaults = JSON.parse(JSON.stringify(this.props.datapoint.dp_defaults['Siemens']));
@@ -209,7 +209,7 @@ class DataSourcePopup extends React.PureComponent {
         }else{
             return(false)
         }
-    }
+    };
 
     stateRowsDelete = (params) =>{
         if(params.row.row_state === "Delete"){
@@ -217,7 +217,7 @@ class DataSourcePopup extends React.PureComponent {
         }else{
             return(false)
         }    
-    }
+    };
 
     columnActions=(params) =>{
         let component = ([<GridActionsCellItem
@@ -265,7 +265,7 @@ class DataSourcePopup extends React.PureComponent {
             {field: "access", headerName:"Access", editable: false, flex:1,
                 valueGetter: (params) => params.row.access.name
             },
-        ]
+        ];
 
         const input_component = (
             <Stack direction='row' spacing='1rem' marginTop='1rem' alignSelf='start'>
@@ -280,7 +280,7 @@ class DataSourcePopup extends React.PureComponent {
                     />
                 </FormControl>
             </Stack>
-        )
+        );
 
         const body_component = (
             <Stack
@@ -308,7 +308,7 @@ class DataSourcePopup extends React.PureComponent {
                 />
                 {input_component}
             </Stack>
-        )
+        );
 
         const jsx_component = (
                 <DialogFullScreen
@@ -321,11 +321,11 @@ class DataSourcePopup extends React.PureComponent {
                 </DialogFullScreen>
         );
         return(jsx_component);
-    }
+    };
 
     componentDidMount= () =>{
         this.handleDsContent();
-    }
+    };
 }
 
 /** Map the Redux state to some component props */
