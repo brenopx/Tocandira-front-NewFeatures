@@ -289,6 +289,18 @@ class DataSourcePopup extends React.PureComponent {
                     },'& .NewRow': {
                         backgroundColor: '#d7f9d6',
                         color: '#000',
+                    },'& .errorDelete': {
+                        backgroundColor: '#f8d2d0',
+                        color: '#000',
+                        WebkitTextFillColor: 'red'
+                    },'& .errorEdited': {
+                        backgroundColor: '#ffffd1',
+                        color: '#000',
+                        WebkitTextFillColor: 'red'
+                    },'& .errorNewRow': {
+                        backgroundColor: '#d7f9d6',
+                        color: '#000',
+                        WebkitTextFillColor: 'red'
                     },
                     'display': 'flex',
                     'direction': 'row'
