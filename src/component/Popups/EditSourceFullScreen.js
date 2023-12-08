@@ -204,17 +204,33 @@ class DataSourcePopup extends React.PureComponent {
         this.setState(newState);
     }
 
+    stateRowsRestore = (params) =>{
+        if(params.row.row_state === "no_alterations"){
+            return(true)
+        }else{
+            return(false)
+        }
+    };
+
+    stateRowsDelete = (params) =>{
+        if(params.row.row_state === "Delete"){
+            return(true)
+        }else{
+            return(false)
+        }    
+    };
+
     columnActions=(params) =>{
         let component = ([<GridActionsCellItem
             icon={<RestoreIcon />}
-            disabled={params.row.row_state === "Delete" || params.row.row_state === "Edited" || params.row.row_state === "NewRow" ? false : true}
+            disabled={this.stateRowsRestore(params)}
             label="Restore"
             onClick={this.handleRestoreClick(params)}
             color="inherit"
         />,
         <GridActionsCellItem
             icon={<DeleteIcon />}
-            disabled={params.row.row_state === "no_alterations" || params.row.row_state === "Edited" || params.row.row_state === "NewRow" ? false : true}
+            disabled={this.stateRowsDelete(params)}
             label="Delete"
             onClick={this.handleDeleteClick(params)}
             color="inherit"
