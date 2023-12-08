@@ -21,8 +21,8 @@ import {
 } from '@mui/x-data-grid';
 import { Button, FormControl, InputLabel, 
     OutlinedInput, Stack } from '@mui/material';
-import {RestoreIcon, DeleteIcon } from '@mui/icons-material';
-
+import {Restore, Delete, HourglassEmpty,
+    Close, Done } from '@mui/icons-material';
 // #######################################
 
 /** Description
@@ -231,11 +231,11 @@ class DataSourcePopup extends React.PureComponent {
         if(params.row.row_state === "errorDelete" 
         || params.row.row_state === "errorEdited" 
         || params.row.row_state === "errorNewRow"){
-            icon = (<CloseIcon />) 
+            icon = (<Close />) 
         }else if(params.row.row_state === 'no_alterations'){
-            icon = (<DoneIcon />) 
+            icon = (<Done />) 
         }else{
-            icon = (<HourglassEmptyIcon />) 
+            icon = (<HourglassEmpty />) 
         }
         let component = ([
                 <Stack flexDirection='row'>
@@ -246,14 +246,14 @@ class DataSourcePopup extends React.PureComponent {
                         color="inherit"
                     />
                     <GridActionsCellItem
-                        icon={<RestoreIcon />}
+                        icon={<Restore />}
                         disabled={this.stateRowsRestore(params)}
                         label="Restore"
                         onClick={this.handleRestoreClick(params)}
                         color="inherit"
                     />
                     <GridActionsCellItem
-                        icon={<DeleteIcon />}
+                        icon={<Delete />}
                         disabled={this.stateRowsDelete(params)}
                         label="Delete"
                         onClick={this.handleDeleteClick(params)}

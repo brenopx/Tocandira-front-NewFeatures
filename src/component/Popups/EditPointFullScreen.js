@@ -21,7 +21,9 @@ import {
 } from '@mui/x-data-grid';
 import { Button, FormControl, InputLabel, 
     OutlinedInput, Stack } from '@mui/material';
-import {RestoreIcon, DeleteIcon } from '@mui/icons-material';
+import {Restore, Delete, HourglassEmpty,
+    Close, Done } from '@mui/icons-material';
+    
 // #######################################
 
 /** Description
@@ -217,22 +219,50 @@ class DataSourcePopup extends React.PureComponent {
         }    
     };
 
-    columnActions=(params) =>{
-        let component = ([<GridActionsCellItem
-            icon={<RestoreIcon />}
-            disabled={this.stateRowsRestore(params)}
-            label="Restore"
-            onClick={this.handleRestoreClick(params)}
-            color="inherit"
-        />,
-        <GridActionsCellItem
-            icon={<DeleteIcon />}
-            disabled={this.stateRowsDelete(params)}
-            label="Delete"
-            onClick={this.handleDeleteClick(params)}
-            color="inherit"
-        />])
-        return (component)
+    stateRowStateline = (params) =>{
+        if(params.row.row_state === "Delete" || params.row.row_state === "errorDelete"){
+            return(true)
+        }else{
+            return(false)
+        }    
+    };
+
+    columnActions = (params) =>{
+        let icon = null
+        if(params.row.row_state === "errorDelete" 
+        || params.row.row_state === "errorEdited" 
+        || params.row.row_state === "errorNewRow"){
+            icon = (<Close />) 
+        }else if(params.row.row_state === 'no_alterations'){
+            icon = (<Done />) 
+        }else{
+            icon = (<HourglassEmpty />) 
+        }
+        let component = ([
+                <Stack flexDirection='row'>
+                    <GridActionsCellItem
+                        icon={icon}
+                        disabled={this.stateRowStateline(params)}
+                        label="state"
+                        color="inherit"
+                    />
+                    <GridActionsCellItem
+                        icon={<Restore />}
+                        disabled={this.stateRowsRestore(params)}
+                        label="Restore"
+                        onClick={this.handleRestoreClick(params)}
+                        color="inherit"
+                    />
+                    <GridActionsCellItem
+                        icon={<Delete />}
+                        disabled={this.stateRowsDelete(params)}
+                        label="Delete"
+                        onClick={this.handleDeleteClick(params)}
+                        color="inherit"
+                    />
+                </Stack>
+            ])
+        return(component)
     };
 
     /** Description.
