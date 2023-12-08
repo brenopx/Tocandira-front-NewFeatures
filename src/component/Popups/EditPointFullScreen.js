@@ -251,6 +251,49 @@ class DataSourcePopup extends React.PureComponent {
             },
         ]
 
+        const input_component = (
+            <Stack direction='row' spacing='1rem' marginTop='1rem' alignSelf='start'>
+                <Button variant="contained" onClick={this.HandleClickButtonNewRows} >
+                    {this.state.name_button_new_rows}
+                </Button>
+                <FormControl>
+                    <InputLabel htmlFor="component-outlined">{this.state.name_button_new_rows}</InputLabel>
+                    <OutlinedInput id="component-Number_Rows" type="number"
+                        value={this.state.number_rows} label={this.state.name_button_new_rows}
+                        onChange={this.handleChangeNumberRows} 
+                    />
+                </FormControl>
+            </Stack>
+        )
+
+        const body_component = (
+            <Stack
+                sx={{
+                    '& .Delete': {
+                        backgroundColor: '#f8d2d0',
+                        color: '#000',
+                    },'& .Edited': {
+                        backgroundColor: '#ffffd1',
+                        color: '#000',
+                    },'& .NewRow': {
+                        backgroundColor: '#d7f9d6',
+                        color: '#000',
+                    },
+                    'display': 'flex',
+                    'direction': 'row'
+                }}
+            >
+                <EditTable 
+                    headers={header}
+                    content_rows={this.state.dp_content}
+                    processRowUpdate={this.processRowUpdate}
+                    handleProcessRowUpdateError={this.handleProcessRowUpdateError}
+                    getRowClassName={(params) => this.getRowClassName(params)}
+                />
+                {input_component}
+            </Stack>
+        )
+
         const jsx_component = (
                 <DialogFullScreen
                     open={this.props.OpenDialog}
@@ -258,42 +301,7 @@ class DataSourcePopup extends React.PureComponent {
                     onOkClick={this.handleOkClickDialog}
                     onCancelClick={this.handleCancelClickDialog}
                 >
-                    <Stack
-                        sx={{
-                            '& .Delete': {
-                                backgroundColor: '#f8d2d0',
-                                color: '#000',
-                            },'& .Edited': {
-                                backgroundColor: '#ffffd1',
-                                color: '#000',
-                            },'& .NewRow': {
-                                backgroundColor: '#d7f9d6',
-                                color: '#000',
-                            },
-                            'display': 'flex',
-                            'direction': 'row'
-                        }}
-                    >
-                        <EditTable 
-                            headers={header}
-                            content_rows={this.state.dp_content}
-                            processRowUpdate={this.processRowUpdate}
-                            handleProcessRowUpdateError={this.handleProcessRowUpdateError}
-                            getRowClassName={(params) => this.getRowClassName(params)}
-                        />
-                        <Stack direction='row' spacing='1rem' marginTop='1rem' alignSelf='start'>
-                        <Button variant="contained" onClick={this.HandleClickButtonNewRows} >
-                            {this.state.name_button_new_rows}
-                        </Button>
-                        <FormControl>
-                            <InputLabel htmlFor="component-outlined">{this.state.name_button_new_rows}</InputLabel>
-                            <OutlinedInput id="component-Number_Rows" type="number"
-                                value={this.state.number_rows} label={this.state.name_button_new_rows}
-                                onChange={this.handleChangeNumberRows} 
-                            />
-                        </FormControl>
-                    </Stack>
-                    </Stack>
+                    {body_component}
                 </DialogFullScreen>
         );
         return(jsx_component);
