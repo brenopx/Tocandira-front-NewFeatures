@@ -249,7 +249,7 @@ class DataSourcePopup extends React.PureComponent {
         const header = [
             {
                 field: 'actions', type: 'actions', cellClassName: 'actions',
-                getActions: (params) => this.columnActions(params),
+                getActions: (params) => this.columnActions(params)
             },
             {field: "name", headerName: "Name", editable: true, flex: 1 },
             {field: "plc_ip", headerName: "IP Address", editable: true, flex: 1 },
@@ -260,7 +260,50 @@ class DataSourcePopup extends React.PureComponent {
                 field: "protocol", headerName: "Protocol", editable: false, flex: 1,
                 valueGetter: (params) => params.row.protocol.name
             },
-        ]
+        ];
+
+        const input_component = (
+            <Stack direction='row' spacing='1rem' marginTop='1rem' alignSelf='start'>
+                <Button variant="contained" onClick={this.HandleClickButtonNewRows} >
+                    {this.state.name_button_new_rows}
+                </Button>
+                <FormControl>
+                    <InputLabel htmlFor="component-outlined">{this.state.name_button_new_rows}</InputLabel>
+                    <OutlinedInput id="component-Number_Rows" type="number"
+                        value={this.state.number_rows} label={this.state.name_button_new_rows}
+                        onChange={this.handleChangeNumberRows} 
+                    />
+                </FormControl>
+            </Stack>
+        );
+
+        const body_component = (
+            <Stack
+                sx={{
+                    '& .Delete': {
+                        backgroundColor: '#f8d2d0',
+                        color: '#000',
+                    },'& .Edited': {
+                        backgroundColor: '#ffffd1',
+                        color: '#000',
+                    },'& .NewRow': {
+                        backgroundColor: '#d7f9d6',
+                        color: '#000',
+                    },
+                    'display': 'flex',
+                    'direction': 'row'
+                }}
+            >
+                <EditTable
+                    headers={header}
+                    content_rows={this.props.datasource.list_edit_table}
+                    processRowUpdate={this.processRowUpdate}
+                    handleProcessRowUpdateError={this.handleProcessRowUpdateError}
+                    getRowClassName={(params) => this.getRowClassName(params)}
+                />
+                {input_component}
+            </Stack>
+        );
 
         const jsx_component = (
             <DialogFullScreen
@@ -269,46 +312,11 @@ class DataSourcePopup extends React.PureComponent {
                 onOkClick={this.handleOkClickDialog}
                 onCancelClick={this.handleCancelClickDialog}
             >
-                <Stack
-                    sx={{
-                        '& .Delete': {
-                            backgroundColor: '#f8d2d0',
-                            color: '#000',
-                        },'& .Edited': {
-                            backgroundColor: '#ffffd1',
-                            color: '#000',
-                        },'& .NewRow': {
-                            backgroundColor: '#d7f9d6',
-                            color: '#000',
-                        },
-                        'display': 'flex',
-                        'direction': 'row'
-                    }}
-                >
-                    <EditTable
-                        headers={header}
-                        content_rows={this.state.ds_content}
-                        processRowUpdate={this.processRowUpdate}
-                        handleProcessRowUpdateError={this.handleProcessRowUpdateError}
-                        getRowClassName={(params) => this.getRowClassName(params)}
-                    />
-                    <Stack direction='row' spacing='1rem' marginTop='1rem' alignSelf='start'>
-                        <Button variant="contained" onClick={this.HandleClickButtonNewRows} >
-                            {this.state.name_button_new_rows}
-                        </Button>
-                        <FormControl>
-                            <InputLabel htmlFor="component-outlined">{this.state.name_button_new_rows}</InputLabel>
-                            <OutlinedInput id="component-Number_Rows" type="number"
-                                value={this.state.number_rows} label={this.state.name_button_new_rows}
-                                onChange={this.handleChangeNumberRows} 
-                            />
-                        </FormControl>
-                    </Stack>
-                </Stack>
+                {body_component}
             </DialogFullScreen>
         );
         return(jsx_component);
-    }
+    };
 
     componentDidMount= () =>{
         this.handleDsContent();
