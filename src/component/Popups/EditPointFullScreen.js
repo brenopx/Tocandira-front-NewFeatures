@@ -16,14 +16,12 @@ import { connect } from 'react-redux';
 import * as datapointActions from '../../store/datapoint/actions'
 import EditTable from '../DataTable/EditTable'
 import DialogFullScreen from './DialogFullScreen'
-import RestoreIcon from '@mui/icons-material/Restore';
-import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import {
     GridActionsCellItem,
 } from '@mui/x-data-grid';
 import { Button, FormControl, InputLabel, 
-    OutlinedInput, Stack } from '@mui/material';//import './DataSourcePopup.css';
-
+    OutlinedInput, Stack } from '@mui/material';
+import {RestoreIcon, DeleteIcon } from '@mui/icons-material';
 // #######################################
 
 /** Description
