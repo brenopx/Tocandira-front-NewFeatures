@@ -92,12 +92,88 @@ export const pushData=(api_instance, ds_info) => (dispatch) => {
 };
 
 /** */
-export const putData=(api_instance, ds_info) => (dispatch) => {
+export const pushListNew=(api_instance, list_new) =>async (dispatch) => {
+    let length_list = list_new.length
+    let count = 0
+    list_new.forEach((row) => {
+        row['timeout'] = 5000;
+        row['cycletime'] = 5000;
+        if(row.row_state === 'Delete' || row.row_state === 'errorDelete'){
+            api_instance.delete('/datasource/'+row.name)
+            .then( (res) => {
+                count += 1
+                if(res.data[row.name]){
+                    dispatch(emitAlert('DataSource "'+row.name+'" deleted!','success'));
+                    dispatch(getData(api_instance))
+                    dispatch(datapointActions.getData(api_instance))
+                } else {
+                    dispatch(emitAlert('Unable to delete DataSource "'+row.name+'"','error'))
+                }
+                if(count === length_list){
+                    dispatch(handleStateEditDs(false))
+                }
+            })
+            .catch((req) => {
+                row.row_state = 'errorDelete'
+                if(req.code===AxiosError.ERR_NETWORK){
+                    dispatch(emitNetworkErrorAlert());
+                }else{
+                    dispatch(emitAlert('DataSource "'+row.name+'" with error!','error'));
+                }
+            })
+        } else if(row.row_state === 'Edited' || row.row_state === 'errorEdited'){
+            api_instance.put('/datasource', row)
+            .then( (res) => {
+                count += 1
+                row.row_state = 'no_alterations'
+                dispatch(getData(api_instance));
+                dispatch(emitAlert('DataSource "'+res.data.name+'" updated!','success'));
+                if(count === length_list){
+                    dispatch(handleStateEditDs(false))
+                }
+            })
+            .catch((req) => {
+                row.row_state = 'errorEdited'
+                if(req.code===AxiosError.ERR_NETWORK){
+                    dispatch(emitNetworkErrorAlert());
+                }else{
+                    dispatch(emitAlert('DataSource "'+row.name+'" with error!','error'));
+                }
+            })  
+        } else if(row.row_state === 'NewRow' || row.row_state === 'errorNewRow'){
+            api_instance.post('/datasource', row)
+            .then( (res) => {
+                count += 1
+                row.row_state = 'no_alterations'
+                dispatch(getData(api_instance));
+                dispatch(emitAlert('DataSource "'+res.data.name+'" created!','success'));
+                if(count === length_list){
+                    dispatch(handleStateEditDs(false))
+                }
+            })
+            .catch((req) => {
+                row.row_state = 'errorNewRow'
+                if(req.code===AxiosError.ERR_NETWORK){
+                    dispatch(emitNetworkErrorAlert());
+                }else{
+                    dispatch(emitAlert('DataSource "'+row.name+'" with error!','error'));
+                }
+            })
+        } else {
+            count += 1
+            if(count === length_list){
+                dispatch(handleStateEditDs(false))
+            }
+        }
+    });
+    return(list_new)
+}
 
+/** */
+export const putData=(api_instance, ds_info) => (dispatch) => {
     // Add dummy parameters not mapped on interface
     ds_info['timeout'] = 5000;
     ds_info['cycletime'] = 5000;
-    
     api_instance.put('/datasource', ds_info)
     .then( (res) => {
         dispatch(getData(api_instance));
