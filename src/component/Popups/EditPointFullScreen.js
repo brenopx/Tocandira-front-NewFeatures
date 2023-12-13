@@ -16,9 +16,7 @@ import { connect } from 'react-redux';
 import * as datapointActions from '../../store/datapoint/actions'
 import EditTable from '../DataTable/EditTable'
 import DialogFullScreen from './DialogFullScreen'
-import {
-    GridActionsCellItem,
-} from '@mui/x-data-grid';
+import { GridActionsCellItem } from '@mui/x-data-grid';
 import { Button, FormControl, InputLabel, 
     OutlinedInput, Stack } from '@mui/material';
 import { Restore, Delete, HourglassEmpty,
@@ -39,12 +37,15 @@ class DataSourcePopup extends React.PureComponent {
         dp_content: [],
         name_button_new_rows: "Add New Rows",
         number_rows: 1,
-        length_dp_content: null
+        length_dp_content: null,
+        open_cancel: false,
+        state_popus_cancel: false,
+        delete_content: { title: "", msg: "" },
     };
     
     handleDsContent= () =>{
         let list_dp = this.props.datapoint.dp_content.filter(this.filterData)
-        list_dp.forEach( (row) =>{
+        list_dp.forEach((row) =>{
             row['row_state'] = 'no_alterations'
         })
         const newState = {...this.state};
@@ -56,20 +57,20 @@ class DataSourcePopup extends React.PureComponent {
     processRowUpdate= (newRow) =>{
         let new_dp_content = []
         let list_dp = JSON.parse(JSON.stringify(this.state.dp_content))
-        list_dp.forEach( (row) =>{
-            if(row.table_id === newRow.table_id) {
+        list_dp.forEach((row) =>{
+            if(row.table_id === newRow.table_id){
                 if(row.row_state === 'NewRow' || row.row_state === 'errorNewRow'){
                     new_dp_content.push(newRow)
-                } else {
+                } else{
                     newRow['access'] = row['access']
                     newRow['row_state'] = 'Edited'
                     new_dp_content.push(newRow)
                 }
-            } else {
+            } else{
                 new_dp_content.push(row)
             }
         })
-        const newState = { ...this.state };
+        const newState = {...this.state};
         newState.dp_content = new_dp_content;
         this.setState(newState);
         return (newRow);
@@ -88,33 +89,55 @@ class DataSourcePopup extends React.PureComponent {
             copy_dp_content
         )
         let new_list_dp = []
-        list_result.forEach((row) => {
-            if (row.row_state === "Delete") {
+        list_result.forEach((row) =>{
+            if(row.row_state === "Delete"){
                 return
-            } else {
+            } else{
                 new_list_dp.push(row)
             }
         })
-        const newState = { ...this.state };
+        const newState = {...this.state};
         newState.dp_content = new_list_dp;
         this.setState(newState);
     };
 
     handleCancelClickDialog= () =>{
-        this.props.onHandleStateEditDp(false);
-        this.handleClear();
+        if(this.state.state_popus_cancel){
+            const delete_title = 'Do you want to exit without saving the changes you made?';
+            const delete_msg = 'Your changes will be lost if you continue.';
+
+            const newState = {...this.state};
+            newState.delete_content = { title: delete_title, msg: delete_msg };
+            newState.open_cancel = true;
+            this.setState(newState);
+        } else{
+            this.props.onHandleStateEditDs(false);
+            this.handleClear();
+        }
     };
+
+    handleDeleteProceed= () =>{
+        this.props.onHandleStateEditDs(false);
+        this.handleClear();
+    }
+
+    handleDeleteCancel= () =>{
+        const newState = {...this.state};
+        newState.open_cancel = false;
+        this.setState(newState);
+    }
 
     handleProcessRowUpdateError= (error) =>{
         console.log("valor do error", error);
     };
 
-    handleRestoreClick= (params) => () => {
+    handleRestoreClick= (params) => () =>{
         let row_defaults = JSON.parse(JSON.stringify(this.props.datapoint.dp_defaults['Siemens']));
         let copy_dp_content = JSON.parse(JSON.stringify(this.state.dp_content));
         let list_ds_no_alterations = this.props.datapoint.dp_content.filter(this.filterData)
         let new_list_dp = []
         let row_no_alterations = undefined
+        let new_state_popus_cancel = false
         list_ds_no_alterations.forEach((row) =>{
             if(row.table_id === params.id){
                 row_no_alterations = row
@@ -137,11 +160,12 @@ class DataSourcePopup extends React.PureComponent {
             }
         })
         const newState = {...this.state};
+        newState.state_popus_cancel = new_state_popus_cancel;
         newState.dp_content = new_list_dp;
         this.setState(newState);
     };
     
-    handleDeleteClick= (params) => () => {
+    handleDeleteClick= (params) => () =>{
         let copy_dp_content = JSON.parse(JSON.stringify(this.state.dp_content));
         let newlist_dp = []
         if(params.row.row_state === "NewRow"){
@@ -181,7 +205,7 @@ class DataSourcePopup extends React.PureComponent {
         let new_list_dp = [...copy_dp_content]
         let counter = this.state.number_rows
         let number_id = this.state.length_dp_content
-        while (counter >= 1){
+        while(counter >= 1){
             let new_row = JSON.parse(JSON.stringify(this.props.datapoint.dp_defaults['Siemens']));
             new_row.table_id = number_id
             new_row.num_type = new_row.num_type.defaultValue
@@ -280,6 +304,12 @@ class DataSourcePopup extends React.PureComponent {
             },
         ];
 
+        const delete_popup = <DeletePopup open={this.state.open_cancel}
+        content={this.state.delete_content}
+        nameOk={"EXIT"} nameCancel={"CANCEL"}
+        onOkClick={this.handleDeleteProceed}
+        onCancelClick={this.handleDeleteCancel} />
+
         const input_component = (
             <Stack direction='row' spacing='1rem' marginTop='1rem' alignSelf='start'>
                 <Button variant="contained" onClick={this.HandleClickButtonNewRows} >
@@ -343,6 +373,7 @@ class DataSourcePopup extends React.PureComponent {
                     onCancelClick={this.handleCancelClickDialog}
                 >
                     {body_component}
+                    {delete_popup}
                 </DialogFullScreen>
         );
         return(jsx_component);
