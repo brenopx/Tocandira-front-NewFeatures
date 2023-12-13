@@ -16,6 +16,7 @@ import { connect } from 'react-redux';
 import * as datapointActions from '../../store/datapoint/actions'
 import EditTable from '../DataTable/EditTable'
 import DialogFullScreen from './DialogFullScreen'
+import DeletePopup from '../../component/Popups/DeletePopup';
 import { GridActionsCellItem } from '@mui/x-data-grid';
 import { Button, FormControl, InputLabel, 
     OutlinedInput, Stack } from '@mui/material';
