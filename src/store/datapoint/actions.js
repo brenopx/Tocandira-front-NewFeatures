@@ -132,6 +132,83 @@ export const pushData=(api_instance, dp_info) => (dispatch) => {
     )    
 };
 
+/** */
+export const pushListNew=(api_instance, list_new) =>async (dispatch) => {
+    let length_list = list_new.length
+    let count = 0
+    list_new.forEach((row) => {
+        row['timeout'] = 5000;
+        row['cycletime'] = 5000;
+        if(row.row_state === 'Delete' || row.row_state === 'errorDelete'){
+            api_instance.delete('/datapoint/'+ row.name)
+            .then((res) => {
+                count += 1
+                if(res.data[row.name]){
+                    dispatch(emitAlert('DataPoint "'+row.name+'" deleted!','success'));
+                    dispatch(getData(api_instance))
+                } else {
+                    dispatch(emitAlert('Unable to delete DataPoint "'+row.name+'"','error'))
+                }
+                if(count === length_list){
+                    dispatch(handleStateEditDp(false))
+                }
+            })
+            .catch((req) => {
+                if(req.code===AxiosError.ERR_NETWORK){
+                    dispatch(emitNetworkErrorAlert());
+                }else{
+                    dispatch(emitAlert('DataPoint "'+row.name+'" with error!','error'));
+                // dispatch(invalidEntry(req.response.data.detail));
+                }
+            })
+        } else if(row.row_state === 'Edited' || row.row_state === 'errorEdited'){
+            api_instance.put('/datapoint', row)
+            .then( (res) => {
+                count += 1
+                row.row_state = 'no_alterations'
+                dispatch(getData(api_instance));
+                dispatch(emitAlert('DataPoint "'+res.data.name+'" updated!','success'));
+                if(count === length_list){
+                    dispatch(handleStateEditDp(false))
+                }
+            })
+            .catch((req) => {
+                row.row_state = 'errorEdited'
+                if(req.code===AxiosError.ERR_NETWORK){
+                    dispatch(emitNetworkErrorAlert());
+                }else{
+                    dispatch(emitAlert('DataPoint "'+row.name+'" with error!','error'));
+                }
+            })  
+        } else if(row.row_state === 'NewRow' || row.row_state === 'errorNewRow'){
+            api_instance.post('/datapoint', row)
+            .then( (res) => {
+                count += 1
+                row.row_state = 'no_alterations'
+                dispatch(getData(api_instance));
+                dispatch(emitAlert('DataPoint "'+res.data.name+'" created!','success'));
+                if(count === length_list){
+                    dispatch(handleStateEditDp(false))
+                }
+            })
+            .catch((req) => {
+                row.row_state = 'errorNewRow'
+                if(req.code===AxiosError.ERR_NETWORK){
+                    dispatch(emitNetworkErrorAlert());
+                }else{
+                    dispatch(emitAlert('DataPoint "'+row.name+'" with error!','error'));
+                }
+            })
+        } else {
+            count += 1
+            if(count === length_list){
+                dispatch(handleStateEditDp(false))
+            }
+        }
+    });
+    return(list_new)
+}
+
 /** Request to the backend, where a data point will have its values updated
 * @param `api_instance`: Value containing the authentication for the backend
 * @param `dp_info`: Updated data point attributes */
