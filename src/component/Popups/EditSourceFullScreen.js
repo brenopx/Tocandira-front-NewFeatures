@@ -18,11 +18,44 @@ import EditTable from '../DataTable/EditTable'
 import DialogFullScreen from './DialogFullScreen'
 import DeletePopup from '../../component/Popups/DeletePopup';
 import { GridActionsCellItem } from '@mui/x-data-grid';
-import { Button, FormControl, InputLabel,
-    OutlinedInput, Stack } from '@mui/material';
+import { Button, FormControl, InputLabel, Box,
+    OutlinedInput, Stack, Tab, Tabs, Card, CardContent } from '@mui/material';
 import { Restore, Delete, HourglassEmpty,
     Close, Done } from '@mui/icons-material';
 // #######################################
+
+/** Description
+ * @property ``
+ * @returns */
+function CustomTabPanel(props) {
+    const { children, value, index, ...other } = props;
+    console.log("valor de props", props)
+    return (
+        <div
+          role="tabpanel"
+          hidden={value !== index}
+          id={`simple-tabpanel-${index}`}
+          aria-labelledby={`simple-tab-${index}`}
+          {...other}
+        >
+          {value === index && (
+            <Box>
+              {children}
+            </Box>
+          )}
+        </div>
+    );
+}
+
+/** Description
+ * @property ``
+ * @returns */
+function a11yProps(index) {
+    return {
+        id: `tab-${index}`,
+        'aria-controls': `tabpanel-${index}`,
+    };
+}
 
 /** Description
 * @property `props.`:
@@ -35,23 +68,47 @@ class DataSourcePopup extends React.PureComponent {
     };
     /** Defines the component state variables */
     state = {
-        ds_content: [],
+        ds_content_siemens: [],
+        ds_content_rockwell: [],
+        ds_content_modbus: [],
+        length_ds_content: null,
+        length_siemens: [],
+        length_rockwell: [],
+        length_modbus: [],
         name_button_new_rows: "Add New Rows",
         number_rows: 1,
-        length_ds_content: null,
         open_cancel: false,
         state_popus_cancel: false,
         delete_content: { title: "", msg: "" },
+        value: 0
     };
 
     handleDsContent= () =>{
         let list_ds = this.props.datasource.ds_content.filter(this.filterData)
+        let list_siemens = []
+        let list_rockwell = []
+        let list_modbus = []
         list_ds.forEach((row) =>{
             row['row_state'] = 'no_alterations'
+            if(row.protocol.name === 'Siemens'){
+                list_siemens.push(row)
+            } else if(row.protocol.name === 'Rockwell'){
+                list_rockwell.push(row)
+            } else if(row.protocol.name === 'Modbus'){
+                list_modbus.push(row)
+            } else {
+                return (null)
+            }
         })
         const newState = {...this.state};
         newState.ds_content = list_ds;
         newState.length_ds_content = list_ds.length;
+        newState.length_siemens = list_siemens.length;
+        newState.length_rockwell = list_rockwell.length;
+        newState.length_modbus = list_modbus.length;
+        newState.ds_content_siemens = list_siemens;
+        newState.ds_content_rockwell = list_rockwell;
+        newState.ds_content_modbus = list_modbus;
         this.setState(newState);
     };
 
@@ -278,54 +335,15 @@ class DataSourcePopup extends React.PureComponent {
         return(component)
     };
 
-    /** Description.
-    * @param ``: 
-    * @returns */
-    filterData= (row) =>{
-        return(row.active && row.collector_id === this.props.collector.selected.id)
-    }
+    handleChangeTab= (event, newValue) => {
+        const newState = {...this.state};
+        newState.value = newValue
+        this.setState(newState);
+    };
 
-    /** Defines the component visualization.
-    * @returns JSX syntax element */
-    render(){
-        const header = [
-            {
-                field: 'actions', type: 'actions', cellClassName: 'actions',
-                getActions: (params) => this.columnActions(params)
-            },
-            { field: "name", headerName: "Name", editable: true, flex: 1 },
-            { field: "plc_ip", headerName: "IP Address", editable: true, flex: 1 },
-            { field: "plc_port", headerName: "PLC Port", editable: true, flex: 1 },
-            { field: "timeout", headerName: "Time Out", editable: true, flex: 1 },
-            { field: "cycletime", headerName: "Cycle Time", editable: true, flex: 1 },
-            {
-                field: "protocol", headerName: "Protocol", editable: false, flex: 1,
-                valueGetter: (params) => params.row.protocol.name
-            },
-        ];
-
-        const delete_popup = <DeletePopup open={this.state.open_cancel}
-            content={this.state.delete_content}
-            nameOk={"EXIT"} nameCancel={"CANCEL"}
-            onOkClick={this.handleDeleteProceed}
-            onCancelClick={this.handleDeleteCancel} />
-
-        const input_component = (
-            <Stack direction='row' spacing='1rem' marginTop='1rem' alignSelf='start'>
-                <Button variant="contained" onClick={this.HandleClickButtonNewRows} >
-                    {this.state.name_button_new_rows}
-                </Button>
-                <FormControl>
-                    <InputLabel htmlFor="component-outlined">{this.state.name_button_new_rows}</InputLabel>
-                    <OutlinedInput id="component-Number_Rows" type="number"
-                        value={this.state.number_rows} label={this.state.name_button_new_rows}
-                        onChange={this.handleChangeNumberRows}
-                    />
-                </FormControl>
-            </Stack>
-        );
-
-        const body_component = (
+    handleBodyComponent= (header, rows) => {
+        const ele = <Card sx={{flex:'1 1 auto', borderRadius:'0 0 1rem 1rem'}}>
+            <CardContent>
             <Stack
                 sx={{
                     '& .Delete': {
@@ -351,19 +369,140 @@ class DataSourcePopup extends React.PureComponent {
                         WebkitTextFillColor: 'red'
                     },
                     'display': 'flex',
-                    'direction': 'row'
+                    'direction': 'row',
+                    'padding': '1rem',
                 }}
             >
                 <EditTable
                     headers={header}
-                    content_rows={this.state.ds_content}
+                    content_rows={rows}
                     processRowUpdate={this.processRowUpdate}
                     handleProcessRowUpdateError={this.handleProcessRowUpdateError}
                     getRowClassName={(params) => this.getRowClassName(params)}
                 />
-                {input_component}
+                <Stack direction='row' spacing='1rem' marginTop='1rem' alignSelf='start'>
+                    <Button variant="contained" onClick={this.HandleClickButtonNewRows} >
+                        {this.state.name_button_new_rows}
+                    </Button>
+                    <FormControl>
+                        <InputLabel htmlFor="component-outlined">{this.state.name_button_new_rows}</InputLabel>
+                        <OutlinedInput id="component-Number_Rows" type="number"
+                            value={this.state.number_rows} label={this.state.name_button_new_rows}
+                            onChange={this.handleChangeNumberRows} size='small'
+                        />
+                    </FormControl>
+                </Stack>
             </Stack>
-        );
+            </CardContent>
+        </Card>
+        return(ele)
+    }
+
+    /** Description.
+    * @param ``: 
+    * @returns */
+    filterData= (row) =>{
+        return(row.active && row.collector_id === this.props.collector.selected.id)
+    }
+
+    /** Defines the component visualization.
+    * @returns JSX syntax element */
+    render(){
+        const header_siemens = [
+            {
+                field: 'actions', type: 'actions', cellClassName: 'actions',
+                getActions: (params) => this.columnActions(params)
+            },
+            { field: "name", headerName: "Name", editable: true, flex: 1 },
+            { field: "plc_ip", headerName: "IP Address", editable: true, flex: 1 },
+            { field: "plc_port", headerName: "PLC Port", editable: true, flex: 1 },
+            {
+                field: "rack", headerName: "Rack", editable: true, flex: 1,
+                valueGetter: (params) => params.row.protocol.data.rack
+            },
+            {
+                field: "slot", headerName: "Slot", editable: true, flex: 1,
+                valueGetter: (params) => params.row.protocol.data.slot
+            },
+            {
+                field: "plc", headerName: "Plc", editable: true, flex: 1,
+                valueGetter: (params) => params.row.protocol.data.plc
+            },
+        ];
+
+        const header_rockwell = [
+            {
+                field: 'actions', type: 'actions', cellClassName: 'actions',
+                getActions: (params) => this.columnActions(params)
+            },
+            { field: "name", headerName: "Name", editable: true, flex: 1 },
+            { field: "plc_ip", headerName: "IP Address", editable: true, flex: 1 },
+            { field: "plc_port", headerName: "PLC Port", editable: true, flex: 1 },
+            {
+                field: "path", headerName: "Path", editable: true, flex: 1,
+                valueGetter: (params) => params.row.protocol.data.path
+            },
+            {
+                field: "slot", headerName: "Slot", editable: true, flex: 1,
+                valueGetter: (params) => params.row.protocol.data.slot
+            },
+            {
+                field: "connection", headerName: "Connection", editable: false, flex: 1,
+                valueGetter: (params) => params.row.protocol.data.connection
+            },
+        ];
+
+        const header_modbus = [
+            {
+                field: 'actions', type: 'actions', cellClassName: 'actions',
+                getActions: (params) => this.columnActions(params)
+            },
+            { field: "name", headerName: "Name", editable: true, flex: 1 },
+            { field: "plc_ip", headerName: "IP Address", editable: true, flex: 1 },
+            { field: "plc_port", headerName: "PLC Port", editable: true, flex: 1 },
+            {
+                field: "slave_id", headerName: "Slave Id", editable: true, flex: 1,
+                valueGetter: (params) => params.row.protocol.data.slave_id
+            },
+        ]; 
+
+        const delete_popup = <DeletePopup open={this.state.open_cancel}
+            content={this.state.delete_content}
+            nameOk={"EXIT"} nameCancel={"CANCEL"}
+            onOkClick={this.handleDeleteProceed}
+            onCancelClick={this.handleDeleteCancel} />
+
+        const tabs = (<Box>
+            <Tabs
+                value={this.state.value}
+                onChange={this.handleChangeTab}
+                TabIndicatorProps={{
+                    style: {
+                      backgroundColor: 'white',
+                      height:'100%',
+                      borderRadius: '1rem 1rem 0 0',
+                    }
+                  }}
+                textColor="inherit"
+                aria-label="full-width-tabs"
+                sx={{
+                    backgroundColor: '#eee'
+                }}
+            >
+                <Tab style={{ zIndex: 1 }} label="Siemens" {...a11yProps(0)} />
+                <Tab style={{ zIndex: 1 }} label="Rockwell" {...a11yProps(1)} />
+                <Tab style={{ zIndex: 1 }} label="Modbus" {...a11yProps(2)} />
+            </Tabs>
+            <CustomTabPanel value={this.state.value} index={0}>
+                {this.handleBodyComponent(header_siemens, this.state.ds_content_siemens)}
+            </CustomTabPanel>
+            <CustomTabPanel value={this.state.value} index={1}>
+                {this.handleBodyComponent(header_rockwell, this.state.ds_content_rockwell)}
+            </CustomTabPanel>
+            <CustomTabPanel value={this.state.value} index={2}>
+                {this.handleBodyComponent(header_modbus, this.state.ds_content_modbus)}
+            </CustomTabPanel>
+        </Box>)
 
         const jsx_component = (
             <DialogFullScreen
@@ -372,7 +511,7 @@ class DataSourcePopup extends React.PureComponent {
                 onOkClick={this.handleOkClickDialog}
                 onCancelClick={this.handleCancelClickDialog}
             >
-                {body_component}
+                {tabs}
                 {delete_popup}
             </DialogFullScreen>
         );
