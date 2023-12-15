@@ -56,7 +56,7 @@ class DialogFullScreen extends React.PureComponent {
     render(){       
         const jsx_component = (
                 <Dialog fullScreen open={this.props.open} scroll='paper' fullWidth maxWidth={this.props.cardWidth}
-                    TransitionComponent={down_animation} PaperProps={{sx:{alignSelf:'flex-start'}}}>
+                    TransitionComponent={down_animation} PaperProps={{sx:{alignSelf:'flex-start', backgroundColor: '#eee'}}}>
                     <AppBar sx={{ position: 'relative' }}>
                         <Toolbar>
                             <Tooltip title={this.props.nameCancel} followCursor disableInteractive>
