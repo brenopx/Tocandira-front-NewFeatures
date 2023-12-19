@@ -37,6 +37,7 @@ class DataTable extends React.PureComponent {
     render(){
         const jsx_component = (
             <DataGrid
+                sx={{...this.props.sx}}
                 columns={this.props.headers}
                 getRowId={(row) => row.table_id}
                 rows={this.props.content_rows}

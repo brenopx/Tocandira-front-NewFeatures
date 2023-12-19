@@ -29,7 +29,6 @@ import { Restore, Delete, HourglassEmpty,
  * @returns */
 function CustomTabPanel(props) {
     const { children, value, index, ...other } = props;
-    console.log("valor de props", props)
     return (
         <div
           role="tabpanel"
@@ -45,17 +44,7 @@ function CustomTabPanel(props) {
           )}
         </div>
     );
-}
-
-/** Description
- * @property ``
- * @returns */
-function a11yProps(index) {
-    return {
-        id: `tab-${index}`,
-        'aria-controls': `tabpanel-${index}`,
-    };
-}
+};
 
 /** Description
 * @property `props.`:
@@ -69,79 +58,80 @@ class DataSourcePopup extends React.PureComponent {
 
     /** Defines the component state variables */
     state = {
-        ds_content_siemens: [],
-        ds_content_rockwell: [],
-        ds_content_modbus: [],
+        ds_content: [],
         length_ds_content: null,
-        length_siemens: [],
-        length_rockwell: [],
-        length_modbus: [],
         name_button_new_rows: "Add New Rows",
         number_rows: 1,
         open_cancel: false,
         state_popus_cancel: false,
         delete_content: { title: "", msg: "" },
-        value: 0
+        protocol_body_content: 'Siemens',
+        options_select: [],
+        value : 0,
     };
 
     handleDsContent=() => {
-        let list_ds = this.props.datasource.ds_content.filter(this.filterData)
-        let list_siemens = []
-        let list_rockwell = []
-        let list_modbus = []
+        console.log("Criando ", this.state.ds_content)
+        let list_ds = this.props.datasource.ds_content.filter(this.filterData);
         list_ds.forEach((row) => {
             row['row_state'] = 'no_alterations'
-            if (row.protocol.name === 'Siemens') {
-                list_siemens.push(row)
-            } else if (row.protocol.name === 'Rockwell') {
-                list_rockwell.push(row)
-            } else if (row.protocol.name === 'Modbus') {
-                list_modbus.push(row)
-            } else {
-                return (null)
-            }
-        })
+        });
+        let options_protocol = JSON.parse(JSON.stringify(
+            this.props.datasource.ds_defaults[this.state.protocol_body_content].protocol.data.plc.menuItems
+        ));
         const newState = {...this.state};
         newState.ds_content = list_ds;
         newState.length_ds_content = list_ds.length;
-        newState.length_siemens = list_siemens.length;
-        newState.length_rockwell = list_rockwell.length;
-        newState.length_modbus = list_modbus.length;
-        newState.ds_content_siemens = list_siemens;
-        newState.ds_content_rockwell = list_rockwell;
-        newState.ds_content_modbus = list_modbus;
+        newState.options_select = options_protocol;
         this.setState(newState);
     };
 
     processRowUpdate=(newRow) => {
-        let new_ds_content = []
-        let new_state_popus_cancel = false
-        let list_ds = JSON.parse(JSON.stringify(this.state.ds_content))
+        let new_ds_content = [];
+        let list_ds = JSON.parse(JSON.stringify(this.state.ds_content));
+        if (this.state.protocol_body_content === 'Siemens'){
+            newRow.protocol.data.plc = newRow.plc
+            newRow.protocol.data.rack = newRow.rack
+            newRow.protocol.data.slot = newRow.slot
+        } else if (this.state.protocol_body_content === 'Rockwell'){
+            newRow.protocol.data.path = newRow.path
+            newRow.protocol.data.slot = newRow.slot
+            newRow.protocol.data.connection = newRow.connection
+        } else if (this.state.protocol_body_content === 'Modbus'){
+            newRow.protocol.data.slave_id = newRow.slave_id
+        } else {}
         list_ds.forEach((row) => {
             if (row.table_id === newRow.table_id) {
                 if (row.row_state === 'NewRow' || row.row_state === 'errorNewRow') {
                     new_ds_content.push(newRow)
-                    new_state_popus_cancel = true
                 } else {
-                    newRow['protocol'] = row['protocol']
                     newRow['row_state'] = 'Edited'
                     new_ds_content.push(newRow)
-                    new_state_popus_cancel = true
                 }
             } else {
                 new_ds_content.push(row)
             }
-        })
+        });
         const newState = {...this.state};
         newState.ds_content = new_ds_content;
-        newState.state_popus_cancel = new_state_popus_cancel;
+        newState.state_popus_cancel = true;
         this.setState(newState);
         return(newRow);
     };
 
     handleClear= () => {
+        console.log("limpando...")
         const newState = {...this.state};
-        newState.ds_content = [];
+        newState.ds_content = []
+        newState.length_ds_content= null
+        newState.name_button_new_rows= "Add New Rows"
+        newState.number_rows= 1
+        newState.open_cancel= false
+        newState.state_popus_cancel= false
+        newState.delete_content= { title: "", msg: "" }
+        newState.protocol_body_content= 'Siemens'
+        newState.options_select= []
+        newState.value = 0
         this.setState(newState);
     };
 
@@ -150,8 +140,8 @@ class DataSourcePopup extends React.PureComponent {
         let list_result = await this.props.onListSaveNew(
             this.props.global.backend_instance,
             copy_ds_content
-        )
-        let new_list_ds = []
+        );
+        let new_list_ds = [];
         list_result.forEach((row) => {
             if (row.row_state === "Delete") {
                 return
@@ -161,6 +151,7 @@ class DataSourcePopup extends React.PureComponent {
         })
         const newState = {...this.state};
         newState.ds_content = new_list_ds;
+        newState.state_popus_cancel = false;
         this.setState(newState);
     };
 
@@ -182,41 +173,45 @@ class DataSourcePopup extends React.PureComponent {
     handleDeleteProceed=() => {
         this.props.onHandleStateEditDs(false);
         this.handleClear();
-    }
+    };
 
     handleDeleteCancel=() => {
         const newState = {...this.state};
         newState.open_cancel = false;
         this.setState(newState);
-    }
+    };
 
     handleProcessRowUpdateError=(error) => {
         console.log("valor do error", error);
     };
 
     handleRestoreClick=(params) =>() => {
-        let row_defaults = JSON.parse(JSON.stringify(this.props.datasource.ds_defaults['Siemens']));
+        let row_defaults = JSON.parse(JSON.stringify(
+            this.props.datasource.ds_defaults[this.state.protocol_body_content]
+        ));
         let copy_ds_content = JSON.parse(JSON.stringify(this.state.ds_content));
-        let list_ds_no_alterations = this.props.datasource.ds_content.filter(this.filterData)
-        let new_list_ds = []
-        let row_no_alterations = undefined
-        let new_state_popus_cancel = false
+        let list_ds_no_alterations = this.props.datasource.ds_content.filter(this.filterData);
+        let new_list_ds = [];
+        let row_no_alterations = undefined;
         list_ds_no_alterations.forEach((row) =>{
             if (row.table_id === params.id) {
                 row_no_alterations = row
                 row_no_alterations['row_state'] = 'no_alterations'
             }
-        })
+        });
         new_list_ds = copy_ds_content.map((row) => {
             if (row_no_alterations !== undefined && row_no_alterations.table_id === row.table_id) {
                 return(row_no_alterations)
             } else if ((row.row_state === "NewRow" || row.row_state === "errorNewRow") && row.table_id === params.id) {
                 let row_empty = row
+                if (this.state.protocol_body_content === 'Siemens'){
+                    row_empty.protocol.data.plc = row_defaults.protocol.data.plc.defaultValue
+                } else if (this.state.protocol_body_content === 'Rockwell'){
+                    row_empty.protocol.data.connection = row_defaults.protocol.data.connection.defaultValue
+                } else if (this.state.protocol_body_content === 'Modbus'){} else {}
                 row_empty.name = row_defaults.name
                 row_empty.plc_ip = row_defaults.plc_ip
                 row_empty.plc_port = row_defaults.plc_port
-                row_empty.cycletime = row_defaults.cycletime
-                row_empty.timeout = row_defaults.timeout
                 return(row_empty)
             } else {
                 return(row)
@@ -224,15 +219,12 @@ class DataSourcePopup extends React.PureComponent {
         })
         const newState = {...this.state};
         newState.ds_content = new_list_ds;
-        newState.state_popus_cancel = new_state_popus_cancel;
         this.setState(newState);
     };
 
     handleDeleteClick=(params) =>() => {
         let copy_ds_content = JSON.parse(JSON.stringify(this.state.ds_content));
-        let newlist_ds = []
-        let new_state_popus_cancel = false
-        console.log("Valor de params", params)
+        let newlist_ds = [];
         copy_ds_content.map((row) => {
             if (params.row.row_state === "NewRow" || params.row.row_state === "errorNewRow") {
                 if (row.table_id === params.id) {
@@ -244,10 +236,9 @@ class DataSourcePopup extends React.PureComponent {
             }
             newlist_ds.push(row)
             return(row)
-        })
+        });
         const newState = {...this.state};
         newState.ds_content = newlist_ds;
-        newState.state_popus_cancel = new_state_popus_cancel;
         this.setState(newState);
     };
 
@@ -262,15 +253,21 @@ class DataSourcePopup extends React.PureComponent {
     };
 
     HandleClickButtonNewRows=() => {
+        let new_row = JSON.parse(JSON.stringify(
+            this.props.datasource.ds_defaults[this.state.protocol_body_content]
+        ));
         let copy_ds_content = JSON.parse(JSON.stringify(this.state.ds_content));
-        let counter = this.state.number_rows
-        let number_id = this.state.length_ds_content
-        let new_list_ds = [...copy_ds_content]
+        let counter = this.state.number_rows;
+        let number_id = this.state.length_ds_content;
+        let new_list_ds = [...copy_ds_content];
         while(counter >= 1) {
-            let new_row = JSON.parse(JSON.stringify(this.props.datasource.ds_defaults['Siemens']));
             new_row.table_id = number_id
             new_row.collector_id = this.props.collector.selected.id
-            new_row.protocol.data.plc = new_row.protocol.data.plc.defaultValue
+            if (this.state.protocol_body_content === 'Siemens'){
+                new_row.protocol.data.plc = new_row.protocol.data.plc.defaultValue
+            } else if (this.state.protocol_body_content === 'Rockwell'){
+                new_row.protocol.data.connection = new_row.protocol.data.connection.defaultValue
+            } else if (this.state.protocol_body_content === 'Modbus'){} else {}
             new_row.row_state = 'NewRow'
             counter -= 1
             number_id += 1
@@ -279,7 +276,7 @@ class DataSourcePopup extends React.PureComponent {
         const newState = {...this.state};
         newState.ds_content = new_list_ds;
         newState.length_ds_content = number_id
-        newState.state_popus_cancel = true;
+        newState.state_popus_cancel = true
         this.setState(newState);
     };
 
@@ -300,7 +297,7 @@ class DataSourcePopup extends React.PureComponent {
     };
 
     columnActions=(params) => {
-        let icon = null
+        let icon = null;
         if (params.row.row_state === "errorDelete"
             || params.row.row_state === "errorEdited"
             || params.row.row_state === "errorNewRow") {
@@ -336,13 +333,13 @@ class DataSourcePopup extends React.PureComponent {
         return(component)
     };
 
-    handleChangeTab=(event, newValue) => {
-        const newState = {...this.state};
-        newState.value = newValue
-        this.setState(newState);
-    };
-
-    handleBodyComponent=(header, rows) => {
+    handleBodyComponent=(protocol, header, rows) => {
+        let rows_body_component = [];
+        rows.forEach((row) =>{
+            if (row.protocol.name === protocol) {
+                rows_body_component.push(row)
+            }
+        });
         const ele = <Card sx={{flex:'1 1 auto', borderRadius:'0 0 1rem 1rem'}}>
             <CardContent>
             <Stack
@@ -376,7 +373,7 @@ class DataSourcePopup extends React.PureComponent {
             >
                 <EditTable
                     headers={header}
-                    content_rows={rows}
+                    content_rows={rows_body_component}
                     processRowUpdate={this.processRowUpdate}
                     handleProcessRowUpdateError={this.handleProcessRowUpdateError}
                     getRowClassName={(params) => this.getRowClassName(params)}
@@ -397,14 +394,37 @@ class DataSourcePopup extends React.PureComponent {
             </CardContent>
         </Card>
         return(ele)
-    }
+    };
+
+    handleChangeTab=(event, newValue) => {
+        let protocol = undefined;
+        let options_protocol = [];
+        if (newValue === 0){
+            protocol = "Siemens"
+            options_protocol = JSON.parse(JSON.stringify(
+                this.props.datasource.ds_defaults["Siemens"].protocol.data.plc.menuItems
+            ));
+        } else if (newValue === 1) {
+            protocol = "Rockwell"
+            options_protocol = JSON.parse(JSON.stringify(
+                this.props.datasource.ds_defaults["Rockwell"].protocol.data.connection.menuItems
+            ));
+        } else  if (newValue === 2) {
+            protocol = "Modbus"
+        } else {}
+        const newState = {...this.state};
+        newState.value = newValue
+        newState.protocol_body_content = protocol
+        newState.options_select = options_protocol
+        this.setState(newState);
+    };
 
     /** Description.
     * @param ``: 
     * @returns */
     filterData=(row) => {
         return(row.active && row.collector_id === this.props.collector.selected.id)
-    }
+    };
 
     /** Defines the component visualization.
     * @returns JSX syntax element */
@@ -426,7 +446,8 @@ class DataSourcePopup extends React.PureComponent {
                 valueGetter: (params) => params.row.protocol.data.slot
             },
             {
-                field: "plc", headerName: "Plc", editable: true, flex: 1,
+                field: "plc", headerName: "PLC Model", type: 'singleSelect', 
+                editable: true, flex: 1, valueOptions: this.state.options_select,
                 valueGetter: (params) => params.row.protocol.data.plc
             },
         ];
@@ -448,7 +469,8 @@ class DataSourcePopup extends React.PureComponent {
                 valueGetter: (params) => params.row.protocol.data.slot
             },
             {
-                field: "connection", headerName: "Connection", editable: false, flex: 1,
+                field: "connection", headerName: "Connection", type: 'singleSelect', 
+                editable: true, flex: 1, valueOptions: this.state.options_select,
                 valueGetter: (params) => params.row.protocol.data.connection
             },
         ];
@@ -467,43 +489,47 @@ class DataSourcePopup extends React.PureComponent {
             },
         ]; 
 
-        const delete_popup = <DeletePopup open={this.state.open_cancel}
-            content={this.state.delete_content}
-            nameOk={"EXIT"} nameCancel={"CANCEL"}
-            onOkClick={this.handleDeleteProceed}
-            onCancelClick={this.handleDeleteCancel} />
+        const delete_popup = (
+            <DeletePopup open={this.state.open_cancel}
+                content={this.state.delete_content}
+                nameOk={"EXIT"} nameCancel={"CANCEL"}
+                onOkClick={this.handleDeleteProceed}
+                onCancelClick={this.handleDeleteCancel} />
+        );
 
-        const tabs = (<Box>
-            <Tabs
-                value={this.state.value}
-                onChange={this.handleChangeTab}
-                TabIndicatorProps={{
-                    style: {
-                      backgroundColor: 'white',
-                      height:'100%',
-                      borderRadius: '1rem 1rem 0 0',
-                    }
-                  }}
-                textColor="inherit"
-                aria-label="full-width-tabs"
-                sx={{
-                    backgroundColor: '#eee'
-                }}
-            >
-                <Tab style={{ zIndex: 1 }} label="Siemens" {...a11yProps(0)} />
-                <Tab style={{ zIndex: 1 }} label="Rockwell" {...a11yProps(1)} />
-                <Tab style={{ zIndex: 1 }} label="Modbus" {...a11yProps(2)} />
-            </Tabs>
-            <CustomTabPanel value={this.state.value} index={0}>
-                {this.handleBodyComponent(header_siemens, this.state.ds_content_siemens)}
-            </CustomTabPanel>
-            <CustomTabPanel value={this.state.value} index={1}>
-                {this.handleBodyComponent(header_rockwell, this.state.ds_content_rockwell)}
-            </CustomTabPanel>
-            <CustomTabPanel value={this.state.value} index={2}>
-                {this.handleBodyComponent(header_modbus, this.state.ds_content_modbus)}
-            </CustomTabPanel>
-        </Box>)
+        const tabs = (
+            <Box>
+                <Tabs
+                    value={this.state.value}
+                    onChange={this.handleChangeTab}
+                    TabIndicatorProps={{
+                        style: {
+                        backgroundColor: 'white',
+                        height:'100%',
+                        borderRadius: '1rem 1rem 0 0',
+                        }
+                    }}
+                    textColor="inherit"
+                    aria-label="full-width-tabs"
+                    sx={{
+                        backgroundColor: '#eee'
+                    }}
+                >
+                    <Tab style={{ zIndex: 1 }} label="Siemens" />
+                    <Tab style={{ zIndex: 1 }} label="Rockwell" />
+                    <Tab style={{ zIndex: 1 }} label="Modbus" />
+                </Tabs>
+                <CustomTabPanel value={this.state.value} index={0}>
+                    {this.handleBodyComponent("Siemens", header_siemens, this.state.ds_content)}
+                </CustomTabPanel>
+                <CustomTabPanel value={this.state.value} index={1}>
+                    {this.handleBodyComponent("Rockwell", header_rockwell, this.state.ds_content)}
+                </CustomTabPanel>
+                <CustomTabPanel value={this.state.value} index={2}>
+                    {this.handleBodyComponent("Modbus", header_modbus, this.state.ds_content)}
+                </CustomTabPanel>
+            </Box>
+        );
 
         const jsx_component = (
             <DialogFullScreen
