@@ -243,31 +243,26 @@ class DataSourcePopup extends React.PureComponent {
 
     HandleClickButtonNewRows=() => {
         let new_row = JSON.parse(JSON.stringify(
-            this.props.datapoint.dp_defaults[this.state.data_source_content.protocol]
+            this.props.datapoint.dp_defaults[
+                this.state.data_source_content.protocol
+            ]
         ));
         let copy_dp_content = JSON.parse(JSON.stringify(this.state.dp_content));
         let counter = this.state.number_rows;
         let number_id = this.state.length_dp_content;
         let new_list_dp = [...copy_dp_content];
         while(counter >= 1) {
-            console.log("Valor de this.state.data_source_content.name", this.state.data_source_content.name)
             new_row.table_id = number_id
-            new_row.collector_id = this.props.collector.selected.id
             new_row.datasource_name = this.state.data_source_content.name
             new_row.num_type = new_row.num_type.defaultValue
-            // if (this.state.data_source_content.protocol === 'Siemens'){
-            //     new_row.acess.data.address = new_row.acess.data.address.defaultValue
-            // } else if (this.state.data_source_content.protocol === 'Rockwell'){
-            //     new_row.acess.data.tag_name = new_row.acess.data.tag_name.defaultValue
-            // } else if (this.state.data_source_content.protocol === 'Modbus'){
-            //     new_row.acess.data.func_code = new_row.acess.data.func_code.defaultValue
-            // } else {}
+            if (this.state.data_source_content.protocol === 'Modbus'){
+                new_row.access.data.func_code = new_row.access.data.func_code.defaultValue
+            }
             new_row.row_state = 'NewRow'
             counter -= 1
             number_id += 1
             new_list_dp.push(new_row)
         }
-        console.log("valor de new_list_dp", new_list_dp)
         const newState = {...this.state};
         newState.dp_content = new_list_dp;
         newState.length_dp_content = number_id
@@ -395,6 +390,9 @@ class DataSourcePopup extends React.PureComponent {
     };
 
     handleChangeTab=(event, newValue) => {
+        console.log("Valor de ds_content_name", this.state.ds_content_name)
+        console.log("Valor de event.target.innerText", event.target.innerText)
+        console.log("Valor de event", event)
         let protocol = undefined;
         let options_protocol = [];
         this.state.ds_content_name.forEach((row) =>{
@@ -407,6 +405,7 @@ class DataSourcePopup extends React.PureComponent {
                 }
             }
         })
+        console.log("Valor de protocol", protocol)
         const newState = {...this.state};
         newState.value = newValue
         newState.data_source_content = {name: event.target.innerText, protocol: protocol}
@@ -414,7 +413,7 @@ class DataSourcePopup extends React.PureComponent {
         this.setState(newState);
     };
 
-        /** Description.
+    /** Description.
     * @param ``: 
     * @returns */
     filterDataSource=(row) => {

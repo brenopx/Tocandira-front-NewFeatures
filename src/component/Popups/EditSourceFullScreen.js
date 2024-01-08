@@ -289,7 +289,9 @@ class DataSourcePopup extends React.PureComponent {
     };
 
     stateRowsDelete=(params) => {
-        if (params.row.row_state === "Delete" || params.row.row_state === "errorDelete") {
+        if (params.row.row_state === "Delete" 
+            || params.row.row_state === "errorDelete"
+        ) {
             return(true)
         } else {
             return(false)
